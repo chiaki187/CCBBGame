@@ -1,54 +1,131 @@
+import express from "express";
+import { createServer } from "http";
 import { WebSocketServer } from "ws";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Renderが自動で割り当てるポート（無ければローカル用の3000番）を使う
-const PORT = process.env.PORT || 3000;
+
+// 現在のファイル場所を取得
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+// -------------------------
+// Express（画面配信用）
+// -------------------------
+
+const app = express();
+
+
+// distフォルダを公開する
+app.use(
+    express.static(
+        path.join(__dirname, "../../dist")
+    )
+);
+
+
+// HTTPサーバ作成
+const server = createServer(app);
+
+
+
+// -------------------------
+// WebSocket（通信部分）
+// -------------------------
 
 const wss = new WebSocketServer({
-    port: PORT
+    server
 });
+
 
 let playerCount = 0;
 
-// 起動ログにもポート番号を表示しておくと確認しやすくなります
-console.log(`サーバ起動（ポート: ${PORT}）`);
+
+
+console.log("サーバ起動");
+
+
 
 wss.on("connection", (ws) => {
 
     playerCount++;
+
 
     console.log(
         "接続人数:",
         playerCount
     );
 
+
     const message = {
-        type: "PLAYER_COUNT",
-        count: playerCount
+        type:"PLAYER_COUNT",
+        count:playerCount
     };
 
+
     // 全員へ送信
-    wss.clients.forEach(client => {
-        if (client.readyState === 1) { // 接続が生きているクライアントだけに送る安全策
+    wss.clients.forEach(client=>{
+
+        if(client.readyState === 1){
+
             client.send(
                 JSON.stringify(message)
             );
+
         }
+
     });
 
-    // 【重要】切断されたときの処理（人数を減らすため）
-    ws.on("close", () => {
+
+
+    ws.on("close",()=>{
+
+
         playerCount--;
-        console.log("切断。現在の接続人数:", playerCount);
-        
+
+
+        console.log(
+            "切断:",
+            playerCount
+        );
+
+
         const leaveMessage = {
-            type: "PLAYER_COUNT",
-            count: playerCount
+            type:"PLAYER_COUNT",
+            count:playerCount
         };
-        
-        wss.clients.forEach(client => {
-            if (client.readyState === 1) {
-                client.send(JSON.stringify(leaveMessage));
+
+
+        wss.clients.forEach(client=>{
+
+            if(client.readyState === 1){
+
+                client.send(
+                    JSON.stringify(leaveMessage)
+                );
+
             }
+
         });
+
+
     });
+
+
+});
+
+
+
+// Renderのポート
+const PORT = process.env.PORT || 3000;
+
+
+
+server.listen(PORT,()=>{
+
+    console.log(
+        `HTTP + WebSocket server start ${PORT}`
+    );
+
 });

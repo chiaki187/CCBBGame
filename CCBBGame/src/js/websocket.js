@@ -21,7 +21,7 @@ export function connect(callback) {
         callback(data);
     };
     
-    // エラーが起きたときにログを出せるようにしておくと便利です
+    // エラーが起きたときにログを出せるように
     socket.onerror = (error) => {
         console.error("WebSocketエラー:", error);
     };

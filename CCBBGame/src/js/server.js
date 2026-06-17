@@ -49,70 +49,41 @@ console.log("サーバ起動");
 
 wss.on("connection", (ws) => {
 
-    playerCount++;
+    console.log("接続数:", wss.clients.size);
 
-
-    console.log(
-        "接続人数:",
-        playerCount
-    );
-
-
-    const message = {
-        type:"PLAYER_COUNT",
-        count:playerCount
-    };
-
-
-    // 全員へ送信
-    wss.clients.forEach(client=>{
-
-        if(client.readyState === 1){
-
-            client.send(
-                JSON.stringify(message)
-            );
-
-        }
-
-    });
-
-
-
-    ws.on("close",()=>{
-
-
-        playerCount--;
-
-
-        console.log(
-            "切断:",
-            playerCount
-        );
-
-
-        const leaveMessage = {
-            type:"PLAYER_COUNT",
-            count:playerCount
+    const sendPlayerCount = () => {
+        const message = {
+            type: "PLAYER_COUNT",
+            count: wss.clients.size
         };
 
-
-        wss.clients.forEach(client=>{
-
-            if(client.readyState === 1){
-
-                client.send(
-                    JSON.stringify(leaveMessage)
-                );
-
+        wss.clients.forEach(client => {
+            if (client.readyState === 1) {
+                client.send(JSON.stringify(message));
             }
-
         });
+    };
 
+    sendPlayerCount();
 
+    if (wss.clients.size === 2) {
+
+        const startMessage = {
+            type: "START_GAME"
+        };
+
+        wss.clients.forEach(client => {
+            if (client.readyState === 1) {
+                client.send(JSON.stringify(startMessage));
+            }
+        });
+    }
+
+    ws.on("close", () => {
+        console.log("切断");
+
+        setTimeout(sendPlayerCount, 10);
     });
-
-
 });
 
 

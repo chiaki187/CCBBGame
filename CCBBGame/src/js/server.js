@@ -52,6 +52,21 @@ wss.on("connection", (ws) => {
     console.log("接続数:", wss.clients.size);
 
     const sendPlayerCount = () => {
+
+
+        ws.on("message",(message)=>{
+            wss.clients.forEach(client=>{
+
+                if(client.readyState === 1){
+
+                    client.send(
+                        message.toString()
+                    );
+                }
+            });
+        });
+
+
         const message = {
             type: "PLAYER_COUNT",
             count: wss.clients.size

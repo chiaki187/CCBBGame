@@ -26,3 +26,10 @@ export function connect(callback) {
         console.error("WebSocketエラー:", error);
     };
 }
+
+
+export function send(data){
+    socket.send(
+        JSON.stringify(data)
+    );
+}

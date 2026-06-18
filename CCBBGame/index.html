@@ -5,6 +5,45 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ccbbgame</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.min.js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        img {
+            width: 300px;
+            margin-top: 20px;
+        }
+
+        #palette {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .color-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        button {
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+    </style>
   </head>
   <body>
     <div id="firstView">
@@ -18,8 +57,35 @@
       <input id="chatInput">
       <button id="sendButton">送信</button>
       <div id="chatArea"></div>
+
+
+        <h1>Color Palette</h1>
+
+      <!-- ファイル選択 -->
+      <input type="file" id="fileInput" accept="image/*">
+      <img id="img">
+
+      <!-- ランダムカラーボタン -->
+      <br> 
+      <button id="randomBtn">ランダムカラー</button>
+
+      <br>
+      <div id="palette">
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+          <div class="color-box"></div>
+      </div>
     </div>
     <script type="module" src="/src/main.js"></script>
     
   </body>
+
+  <script type="module" src="./src/js/color.js"></script>
+  <script src="./src/main.js"></script>
+
 </html>

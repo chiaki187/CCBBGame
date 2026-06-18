@@ -62,3 +62,33 @@ sendButton.addEventListener("click",()=>{
     });
 
 });
+
+import { generatePalette,generateRandomColors } from "./js/color.js";
+const fileInput = document.getElementById("fileInput");
+const randomBtn = document.getElementById("randomBtn");
+const img = document.getElementById("img");
+const boxes = document.querySelectorAll(".color-box");
+
+const colorThief = new ColorThief();
+
+// ファイル（画像）選択
+fileInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+    img.src = imageUrl;
+
+    img.onload = function () {
+        generatePalette(img, boxes, colorThief);
+    };
+});
+
+// ランダムカラー
+randomBtn.addEventListener("click", () => {
+    // ファイル選択解除
+    fileInput.value = "";
+    img.src = "";
+
+    generateRandomColors(boxes);
+});

@@ -55,11 +55,11 @@
         flex-direction: row;
     }
     #camera {
-        width: 320px;
-        height: 180px;
+        width: 100%;
+        height:100%;
         transform: scaleX(-1);
     }
-    #canvas, #overlay {
+    #canvas, #overlay,#matterCanvas {
         width: 1280px;
         height: 720px;
         position: absolute;
@@ -113,19 +113,21 @@
 
     <!--カメラ画面-->
     <div id="cameraView">
-      <div id="app" class="col">
+      <div class="col">
         <div id="cam" class="row">
           <div class="col">
-            <video id="camera" width="320" height="180">
-            </video>
+          
             <div>video</div>
           </div>
         </div>
         <div id="draw">
           <canvas id="canvas" width="1280" height="720">
           </canvas>
+          <video id="camera" width="1280" height="720">
+            </video>
           <canvas id="overlay" width="1280" height="720">
           </canvas>
+          <canvas id="matterCanvas"></canvas>
         </div>
       </div>
     </div>

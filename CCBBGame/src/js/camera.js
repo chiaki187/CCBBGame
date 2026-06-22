@@ -2,7 +2,7 @@ import {
   GestureRecognizer,
   FilesetResolver,
 } from "@mediapipe/tasks-vision";
-
+import { addBlock } from "./blocks.js";
 
 const res = await fetch("/gesture_recognizer.task");
 console.log(res.status);
@@ -10,6 +10,8 @@ console.log(res.headers.get("content-type"));
 
 
 let handGesture;
+let prevX = null; // ← 追加
+let prevY = null; // ← 追加
 
 
 async function initDetector() {
@@ -60,8 +62,8 @@ export async function setupCamera(){
   const stream =
     await navigator.mediaDevices.getUserMedia({
       video:{
-        width:320,
-        height:180
+        width:640,
+        height:360
       },
       audio:false
     });
@@ -133,8 +135,7 @@ function drawFrame(camera, overlay, canvas){
   );
 
 
-  const now =
-    performance.now();
+  const now = performance.now();
 
 
   const result =
@@ -148,11 +149,15 @@ function drawFrame(camera, overlay, canvas){
     result.landmarks;
 
 
-  const ctx =
+  const gestures =
+    result.gestures;
+
+
+  const octx =
     overlay.getContext("2d");
 
 
-  ctx.clearRect(
+  octx.clearRect(
     0,
     0,
     overlay.width,
@@ -160,10 +165,11 @@ function drawFrame(camera, overlay, canvas){
   );
 
 
+  // 手の骨格表示
   for(const hand of hands){
 
     drawHand(
-      ctx,
+      octx,
       hand,
       overlay.width,
       overlay.height
@@ -172,4 +178,56 @@ function drawFrame(camera, overlay, canvas){
   }
 
 
+  // ジェスチャーがない場合終了
+  if(gestures.length === 0){
+    prevX = null;
+    prevY = null;
+    return;
+  }
+
+
+  const name =
+    gestures[0][0].categoryName;
+
+
+
+  // 人差し指を立てている場合
+  if(name === "Pointing_Up"){
+    console.log("指たててます！");
+    const finger = hands[0][8];
+    const fx = (1 - finger.x) * overlay.width;
+    const fy = finger.y * overlay.height;
+
+
+    // 外部に公開
+    fingerState.x = fx;
+    fingerState.y = fy;
+    fingerState.isPointing = true;
+
+    //赤い丸
+    octx.beginPath();
+    octx.arc(fx, fy, 10, 0, Math.PI * 2);
+    octx.fillStyle = "red";
+    octx.fill();
+
+
+     addBlock(fingerState.x-250, fingerState.y);
+  }else{
+
+    // 指を立てていない時はリセット
+    fingerState.x = null;
+    fingerState.y = null;
+    fingerState.isPointing = false;
+    prevX = null;
+    prevY = null;
+
+  }
+
 }
+
+//手の位置情報を外に向けて公開
+export let fingerState={
+    x:null,
+    y:null,
+    isPointing: false,
+};

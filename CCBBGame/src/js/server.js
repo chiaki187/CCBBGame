@@ -41,20 +41,82 @@ const wss = new WebSocketServer({
 
 let playerCount = 0;
 
-
+// プレイヤーの情報(カラー)を保存するためのMap
+const players = new Map();
 
 console.log("サーバ起動");
 
+function sendColorState() {
+    const list = [];
+    players.forEach(p => {
+        list.push({
+            id: p.id,
+            colors: p.colors,
+            selectedColor: p.selectedColor,
+            decided: p.decided
+        });
+    });
 
+    const message = {
+        type: "COLOR_STATE",
+        players: list
+    };
+
+    console.log("COLOR_STATE送信:", list);
+
+    wss.clients.forEach(client => {
+        if (client.readyState === 1) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
 
 wss.on("connection", (ws) => {
-
     console.log("接続数:", wss.clients.size);
+
+    // 1. 接続したプレイヤーに一意のIDを発行して通知 (INIT)
+    const playerId = Math.random().toString(36).substring(2, 9);
+    
+    // プレイヤー情報を初期化してMapに保存
+    players.set(ws, {
+        id: playerId,
+        colors: [],
+        selectedColor: null,
+        decided: false
+    });
+
+    console.log("プレイヤー情報:", players.get(ws));
+
+    ws.send(JSON.stringify({
+        type: "INIT",
+        id: playerId
+    }));
 
     const sendPlayerCount = () => {
 
-
         ws.on("message",(message)=>{
+
+            const data = JSON.parse(message.toString())
+            console.log(data.type);
+            if (data.type === "SELECT_COLOR") {
+                const playerData = players.get(ws);
+                console.log(playerData);
+                if (playerData) {
+                    playerData.colors = data.colors;
+                    playerData.selectedColor = data.selectedColor;
+                    playerData.decided = true; // 決定フラグをtrueにする
+
+                    console.log("プレイヤーの選択色更新:", playerData);
+                    console.log("プレイヤー:", players.get(ws));
+                    // マップの情報を更新
+                    players.set(ws, playerData);
+                    
+                    // お互いの決定状態が変わったので全員に同期
+                    sendColorState();
+                }
+            }
+            console.log("受信:",message.toString());
+
             wss.clients.forEach(client=>{
 
                 if(client.readyState === 1){
@@ -100,7 +162,6 @@ wss.on("connection", (ws) => {
         setTimeout(sendPlayerCount, 10);
     });
 });
-
 
 
 // Renderのポート

@@ -106,8 +106,6 @@ wss.on("connection", (ws) => {
                     playerData.selectedColor = data.selectedColor;
                     playerData.decided = true; // 決定フラグをtrueにする
 
-                    console.log("プレイヤーの選択色更新:", playerData);
-                    console.log("プレイヤー:", players.get(ws));
                     // マップの情報を更新
                     players.set(ws, playerData);
                     
@@ -115,7 +113,6 @@ wss.on("connection", (ws) => {
                     sendColorState();
                 }
             }
-            console.log("受信:",message.toString());
 
             wss.clients.forEach(client=>{
 
@@ -158,6 +155,11 @@ wss.on("connection", (ws) => {
 
     ws.on("close", () => {
         console.log("切断");
+        
+        players.delete(ws);
+
+        // 状態を全員に再送
+        sendColorState();
 
         setTimeout(sendPlayerCount, 10);
     });

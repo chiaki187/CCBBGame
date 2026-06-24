@@ -19,19 +19,23 @@ const chatArea =
 document.querySelector("#chatArea");
 
 // カラー関連
-import { generatePalette, generateRandomColors } from "./js/color.js";
+import { generatePalette, generateRandomColors
+    ,showWaiting ,showOpponentPalette, showSelectedPalette
+ } from "./js/color.js";
 
 const fileInput = document.getElementById("fileInput");
 const randomBtn = document.getElementById("randomBtn");
 const img = document.getElementById("img");
 
-const boxes = document.querySelectorAll(".color-box");
+const boxes_me = document.querySelectorAll(".color-box-me");
+const boxes_opponent = document.querySelectorAll(".color-box-opponent");
+const boxes_selected = document.querySelectorAll(".color-box-selected");
+
 
 // 相手用ボックス
 let opponentBoxes = [];
 
 const decideBtn = document.getElementById("decideBtn");
-const result = document.getElementById("result");
 
 const colorThief = new ColorThief();
 
@@ -53,6 +57,7 @@ connect((data)=>{
         firstView.style.display = "none";
         startgameView.style.display = "block";
     }
+
     if(data.type === "CHAT"){
 
         const p =
@@ -69,15 +74,14 @@ connect((data)=>{
         myId = data.id;
         console.log("自分ID:", myId);
     }
+
     if (data.type === "COLOR_STATE") {
-        console.log("COLOR_STATE:", data);
 
         const players = data.players;
 
         // 人数不足
-        console.log("プレイヤーデータ:", players);
         if (players.length < 2) {
-            showWaiting();
+            showWaiting(myColorDecided);
             return;
         }
         
@@ -89,18 +93,26 @@ connect((data)=>{
             // 自分を特定
             const me = players.find(p => p.id === myId);
             // 相手を特定
-            const opponent = players.find(p => p.id !== myId);
-
+            const opponent = players.find(p => p.id !== myId)
 
             if (me && opponent && me.decided && opponent.decided) {
-                showOpponentPalette(opponent.colors);
+                // 相手のカラー表示
+                showOpponentPalette(boxes_opponent, opponent.colors);
+
             } else {
                 console.log("相手データが取得できない");
             }
 
         } else {
-            showWaiting();
+            showWaiting(myColorDecided);
         }
+    }
+
+    if (data.type === "SELECT_PLAYER") {
+        console.log(data.colors);
+        console.log("SELECT");
+        const isMe = data.playerId === myId;
+        showSelectedPalette(boxes_selected, data.colors, isMe);
     }
 
 });
@@ -123,10 +135,10 @@ sendButton.addEventListener("click",()=>{
 
 
 function updateColorsFromBoxes() {
-    myColors = Array.from(boxes).map(box => box.textContent);
+    myColors = Array.from(boxes_me).map(box => box.textContent);
 }
 
-// ファイル（画像）選択
+// ファイル（画像）選択したときの処理
 fileInput.addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -135,35 +147,33 @@ fileInput.addEventListener("change", (event) => {
     img.src = imageUrl;
 
     img.onload = function () {
-        generatePalette(img, boxes, colorThief);
+        generatePalette(img, boxes_me, colorThief);
         updateColorsFromBoxes();
     };
 });
 
-// ランダムカラー
+// ランダムカラーボタンを押したときの処理
 randomBtn.addEventListener("click", () => {
     // ファイル選択解除
     fileInput.value = "";
     img.src = "";
 
-    generateRandomColors(boxes);
+    generateRandomColors(boxes_me);
     updateColorsFromBoxes();
 });
 
-console.log("boxes:", boxes.length);
 // 色選択
-boxes.forEach(box => {
+boxes_me.forEach(box => {
     decideBtn.addEventListener("click", () => {
 
         if (myColorDecided) return; // 決定後は変更不可
         selectedColor = box.textContent;
 
         // 見た目（選択中）
-        boxes.forEach(b => b.classList.remove("selected"));
+        boxes_me.forEach(b => b.classList.remove("selected"));
         box.classList.add("selected");
         });
 });
-
 
 // 決定ボタンを押したときの処理
 decideBtn.addEventListener("click", () => {
@@ -178,30 +188,5 @@ decideBtn.addEventListener("click", () => {
         colors: myColors
     });
 
-    showWaiting();
+    showWaiting(myColorDecided);
 });
-
-
-function showWaiting() {
-    if(!myColorDecided) return;
-    result.textContent = "カラー選択中...";
-}
-
-function showOpponentPalette(colors) {
-    result.textContent = "";
-
-    // すでにあれば削除
-    opponentBoxes.forEach(box => box.remove());
-    opponentBoxes = [];
-
-    colors.forEach(color => {
-        const div = document.createElement("div");
-        div.className = "color-box";
-        div.style.backgroundColor = color;
-        div.textContent = color;
-        
-        result.appendChild(div);
-        opponentBoxes.push(div);
-    });
-
-}

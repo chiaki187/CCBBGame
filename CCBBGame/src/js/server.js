@@ -71,6 +71,28 @@ function sendColorState() {
     });
 }
 
+function sendSelectedPlayer() {
+    console.log("SELECT_PLAYER送信");
+    const playerList = Array.from(players.values());
+
+    if (playerList.length !== 2) return;
+
+    // ランダムで1人選択
+    const selected = playerList[Math.floor(Math.random() * playerList.length)];
+    console.log("型:", typeof selected.colors);
+    const message = {
+        type: "SELECT_PLAYER",
+        playerId: selected.id,
+        colors: selected.colors
+    };
+
+    wss.clients.forEach(client => {
+        if (client.readyState === 1) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
+
 wss.on("connection", (ws) => {
     console.log("接続数:", wss.clients.size);
 
@@ -111,6 +133,13 @@ wss.on("connection", (ws) => {
                     
                     // お互いの決定状態が変わったので全員に同期
                     sendColorState();
+
+                    const decidedPlayers = Array.from(players.values()).filter(p => p.decided);
+
+                    if (decidedPlayers.length === 2) {
+                        sendSelectedPlayer();
+                    }
+
                 }
             }
 

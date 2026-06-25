@@ -41,20 +41,108 @@ const wss = new WebSocketServer({
 
 let playerCount = 0;
 
-
+// プレイヤーの情報(カラー)を保存するためのMap
+const players = new Map();
 
 console.log("サーバ起動");
 
+function sendColorState() {
+    const list = [];
+    players.forEach(p => {
+        list.push({
+            id: p.id,
+            colors: p.colors,
+            selectedColor: p.selectedColor,
+            decided: p.decided
+        });
+    });
 
+    const message = {
+        type: "COLOR_STATE",
+        players: list
+    };
+
+    console.log("COLOR_STATE送信:", list);
+
+    wss.clients.forEach(client => {
+        if (client.readyState === 1) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
+
+function sendSelectedPlayer() {
+    console.log("SELECT_PLAYER送信");
+    const playerList = Array.from(players.values());
+
+    if (playerList.length !== 2) return;
+
+    // ランダムで1人選択
+    const selected = playerList[Math.floor(Math.random() * playerList.length)];
+    console.log("型:", typeof selected.colors);
+    const message = {
+        type: "SELECT_PLAYER",
+        playerId: selected.id,
+        colors: selected.colors
+    };
+
+    wss.clients.forEach(client => {
+        if (client.readyState === 1) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
 
 wss.on("connection", (ws) => {
-
     console.log("接続数:", wss.clients.size);
+
+    // 1. 接続したプレイヤーに一意のIDを発行して通知 (INIT)
+    const playerId = Math.random().toString(36).substring(2, 9);
+    
+    // プレイヤー情報を初期化してMapに保存
+    players.set(ws, {
+        id: playerId,
+        colors: [],
+        selectedColor: null,
+        decided: false
+    });
+
+    console.log("プレイヤー情報:", players.get(ws));
+
+    ws.send(JSON.stringify({
+        type: "INIT",
+        id: playerId
+    }));
 
     const sendPlayerCount = () => {
 
-
         ws.on("message",(message)=>{
+
+            const data = JSON.parse(message.toString())
+            console.log(data.type);
+            if (data.type === "SELECT_COLOR") {
+                const playerData = players.get(ws);
+                console.log(playerData);
+                if (playerData) {
+                    playerData.colors = data.colors;
+                    playerData.selectedColor = data.selectedColor;
+                    playerData.decided = true; // 決定フラグをtrueにする
+
+                    // マップの情報を更新
+                    players.set(ws, playerData);
+                    
+                    // お互いの決定状態が変わったので全員に同期
+                    sendColorState();
+
+                    const decidedPlayers = Array.from(players.values()).filter(p => p.decided);
+
+                    if (decidedPlayers.length === 2) {
+                        sendSelectedPlayer();
+                    }
+
+                }
+            }
+
             wss.clients.forEach(client=>{
 
                 if(client.readyState === 1){
@@ -96,11 +184,15 @@ wss.on("connection", (ws) => {
 
     ws.on("close", () => {
         console.log("切断");
+        
+        players.delete(ws);
+
+        // 状態を全員に再送
+        sendColorState();
 
         setTimeout(sendPlayerCount, 10);
     });
 });
-
 
 
 // Renderのポート

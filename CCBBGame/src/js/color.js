@@ -1,3 +1,7 @@
+import { connect,send } from "./websocket.js";
+
+const opponentDiv = document.getElementById("opponent");
+const selectedDiv = document.getElementById("selected");
 
 // 画像からパレット生成
 export function generatePalette(img, boxes, colorThief) {
@@ -22,3 +26,69 @@ export function generateRandomColors(boxes) {
         box.textContent = color;
     });
 }
+
+export function showWaiting(myColorDecided) {
+    if(!myColorDecided) return;
+
+    if (document.getElementById("waitingText")) return;
+    
+    const msg = document.createElement("p");
+    msg.id = "waitingText";
+    msg.textContent = "カラー選択中...";
+
+    opponentDiv.prepend(msg);
+}
+
+export function showOpponentPalette(boxes, colors) {
+    // "カラー選択中..."削除
+    const msg = document.getElementById("waitingText");
+    if (msg) msg.remove();
+
+    colors.forEach((color, i) => {
+        boxes[i].style.backgroundColor = color;
+    });
+}
+
+export function showSelectedPalette(boxes, colors, isMe) {
+    const selectedText = document.getElementById("selectedPlayer");
+    if (selectedText) selectedText.remove();
+
+    // タイトル
+    const text = document.createElement("p");
+    text.id = "selectedPlayer"
+    text.textContent = isMe 
+        ? "あなたが選ばれました" 
+        : "相手が選ばれました";
+
+    selectedDiv.appendChild(text);
+
+    // カラーボックス
+    colors.forEach((color, i) => {
+        boxes[i].style.backgroundColor = color;
+    });
+}
+// export function showSelectedPalette(boxes){
+//     const selectedText = document.getElementById("selectedPlayer");
+//     if (selectedText) selectedText.remove();
+
+//     connect((data)=>{
+//         if(data.type == "SELECT_PLAYER"){
+//             console.log("SELECT_PLAYER");
+//             // タイトル
+//             const text = document.createElement("p");
+//             text.id = "selectedPlayer"
+//             text.textContent = data.isMe 
+//                 ? "あなたが選ばれました" 
+//                 : "相手が選ばれました";
+
+//             selectedDiv.appendChild(text);
+
+//             const player = data.selectedPlayer;
+//             const colors = player.colors;
+//             // カラーボックス
+//             colors.forEach((color, i) => {
+//                 boxes[i].style.backgroundColor = color;
+//             });
+//         }
+//     })
+// }

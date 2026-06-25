@@ -136,12 +136,6 @@ sendButton.addEventListener("click",()=>{
 
 
 
-//画像の色取得
-import { generatePalette,generateRandomColors } from "./js/color.js";
-const fileInput = document.getElementById("fileInput");
-const randomBtn = document.getElementById("randomBtn");
-const img = document.getElementById("img");
-const boxes = document.querySelectorAll(".color-box");
 
 function updateColorsFromBoxes() {
     myColors = Array.from(boxes_me).map(box => box.textContent);
@@ -167,17 +161,6 @@ randomBtn.addEventListener("click", () => {
     fileInput.value = "";
     img.src = "";
 
-    generateRandomColors(boxes);
-});
-
-
-
-
-
-//カメラ画面
-import { setupCamera } from "./js/camera.js";
-
-setupCamera();
     generateRandomColors(boxes_me);
     updateColorsFromBoxes();
 });
@@ -210,3 +193,11 @@ decideBtn.addEventListener("click", () => {
 
     showWaiting(myColorDecided);
 });
+
+
+
+
+//カメラ画面
+import { setupCamera } from "./js/camera.js";
+
+setupCamera();

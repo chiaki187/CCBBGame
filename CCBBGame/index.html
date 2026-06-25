@@ -39,14 +39,46 @@
             text-align: center;
         }
 
+        button {
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+
+    <!--カメラ画面用-->
+    .col {
+        display: flex;
+        flex-direction: column;
+    }
+    .row {
+        display: flex;
+        flex-direction: row;
+    }
+    #camera {
+        width: 100%;
+        height:100%;
+        transform: scaleX(-1);
+    }
+    #canvas, #overlay,#matterCanvas {
+        width: 1280px;
+        height: 720px;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    #draw {
+        position: relative;
+    }
     </style>
   </head>
   <body>
+
+    <!--初期画面-->
     <div id="firstView">
       <h1>通信を待っています</h1>
     </div>
 
-    
+    <!--ゲーム開始画面-->
     <div id="startgameView" style="display:none;">
       <h1>ゲームを始めます</h1>
 
@@ -105,6 +137,34 @@
       <script type="module" src="/src/main.js"></script>
 
     </div>
+
+
+    <!--カメラ画面-->
+    <div id="cameraView">
+      <div class="col">
+        <div id="cam" class="row">
+          <div class="col">
+          
+            <div>video</div>
+          </div>
+        </div>
+        <div id="draw">
+          <canvas id="canvas" width="1280" height="720">
+          </canvas>
+          <video id="camera" width="1280" height="720">
+            </video>
+          <canvas id="overlay" width="1280" height="720">
+          </canvas>
+          <canvas id="matterCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+    
+  </body>
+
+  <script type="module" src="./src/js/color.js"></script>
+  <script type="module" src="./src/main.js"></script>
+
     
   </body>
 

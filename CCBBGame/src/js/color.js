@@ -67,28 +67,3 @@ export function showSelectedPalette(boxes, colors, isMe) {
         boxes[i].style.backgroundColor = color;
     });
 }
-// export function showSelectedPalette(boxes){
-//     const selectedText = document.getElementById("selectedPlayer");
-//     if (selectedText) selectedText.remove();
-
-//     connect((data)=>{
-//         if(data.type == "SELECT_PLAYER"){
-//             console.log("SELECT_PLAYER");
-//             // タイトル
-//             const text = document.createElement("p");
-//             text.id = "selectedPlayer"
-//             text.textContent = data.isMe 
-//                 ? "あなたが選ばれました" 
-//                 : "相手が選ばれました";
-
-//             selectedDiv.appendChild(text);
-
-//             const player = data.selectedPlayer;
-//             const colors = player.colors;
-//             // カラーボックス
-//             colors.forEach((color, i) => {
-//                 boxes[i].style.backgroundColor = color;
-//             });
-//         }
-//     })
-// }

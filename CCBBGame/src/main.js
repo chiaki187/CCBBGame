@@ -1,4 +1,5 @@
 import { connect,send } from "./js/websocket.js";
+import { startTurn } from "./js/time.js";
 
 //それぞれの画面取得
 const firstView =
@@ -113,6 +114,8 @@ connect((data)=>{
         console.log("SELECT");
         const isMe = data.playerId === myId;
         showSelectedPalette(boxes_selected, data.colors, isMe);
+        // ターン開始
+        startTurn(isMe);
     }
 
 });

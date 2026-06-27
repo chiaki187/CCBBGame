@@ -3,6 +3,7 @@ import {
   FilesetResolver,
 } from "@mediapipe/tasks-vision";
 import { addBlock } from "./blocks.js";
+import { turnState } from "./time.js";
 
 const res = await fetch("/gesture_recognizer.task");
 console.log(res.status);
@@ -134,9 +135,21 @@ function drawFrame(camera, overlay, canvas){
     ()=>drawFrame(camera,overlay,canvas)
   );
 
+  const octx =
+    overlay.getContext("2d");
+
+  // 開始前 or 相手ターン　描画停止
+  if (!turnState.started || !turnState.isMyTurn) {
+    octx.clearRect(0, 0, overlay.width, overlay.height);
+
+    fingerState.x = null;
+    fingerState.y = null;
+    fingerState.isPointing = false;
+
+    return;
+  }
 
   const now = performance.now();
-
 
   const result =
     handGesture.recognizeForVideo(
@@ -151,10 +164,6 @@ function drawFrame(camera, overlay, canvas){
 
   const gestures =
     result.gestures;
-
-
-  const octx =
-    overlay.getContext("2d");
 
 
   octx.clearRect(

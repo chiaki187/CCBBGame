@@ -1,4 +1,5 @@
 import { fingerState } from "./camera";
+import { turnState } from "./time.js";
 
 import Matter from "matter-js";
 const { Engine, Render, Runner, Bodies, World, Events } = Matter;
@@ -31,7 +32,7 @@ const canvasHeight = render.canvas.height;
 const groundWidth = canvasWidth / 3;
 const groundHeight = 10;
 const groundX = canvasWidth / 2;// - groundWidth / 2;
-const groundY = canvasHeight - 10; 
+const groundY = canvasHeight - groundHeight; 
 console.log(canvasWidth, canvasHeight);
 const ground = Bodies.rectangle(
   groundX,   // 横中央
@@ -40,6 +41,12 @@ const ground = Bodies.rectangle(
   groundHeight,
   { isStatic: true }
 );
+
+// 落下判定ライン（これより下に行ったらアウト）
+const OUT_Y = groundY + 100;
+
+// ゲーム終了判定
+let isGameOver = false;
 
 World.add(engine.world, ground);
 
@@ -50,6 +57,37 @@ export function addBlock(x, y){
   });
   World.add(engine.world, block);
 }
+
+
+Events.on(engine, "afterUpdate", () => {
+  if (isGameOver) return;
+
+  const bodies = engine.world.bodies;
+
+  for (const body of bodies) {
+    // 地面は除外
+    if (body === ground) continue;
+
+    // 落下チェック
+    if (body.position.y > OUT_Y) {
+      isGameOver = true;
+
+      // 負け判定（今のターンの人）
+      if (turnState.isMyTurn) {
+        alert("あなたの負け！（落としました）");
+      } else {
+        alert("あなたの勝ち！（相手が落としました）");
+      }
+
+      // エンジン止める
+      Runner.stop(runner);
+
+      break;
+    }
+  }
+});
+
+
 
 Render.run(render);
 Runner.run(Runner.create(), engine);

@@ -128,6 +128,12 @@ function drawHand(ctx, hand, w, h){
   ctx.stroke();
 }
 
+const octx =
+    overlay.getContext("2d");
+
+// 仮--------　ブロック生成時間管理
+let lastBlockTime = 0;
+let lastDetectTime = 0;
 
 function drawFrame(camera, overlay, canvas){
 
@@ -135,8 +141,8 @@ function drawFrame(camera, overlay, canvas){
     ()=>drawFrame(camera,overlay,canvas)
   );
 
-  const octx =
-    overlay.getContext("2d");
+  // const octx =
+  //   overlay.getContext("2d");
 
   // 開始前 or 相手ターン　描画停止
   if (!turnState.started || !turnState.isMyTurn) {
@@ -150,6 +156,10 @@ function drawFrame(camera, overlay, canvas){
   }
 
   const now = performance.now();
+
+  // 処理を軽くするため
+  if (now - lastDetectTime < 100) return;
+    lastDetectTime = now;
 
   const result =
     handGesture.recognizeForVideo(
@@ -219,8 +229,13 @@ function drawFrame(camera, overlay, canvas){
     octx.fillStyle = "red";
     octx.fill();
 
-
-     addBlock(fingerState.x-250, fingerState.y);
+  // 仮--------
+  if (now - lastBlockTime > 500) { // 0.5秒間隔でブロック生成
+    addBlock(fingerState.x - 250, fingerState.y);
+    lastBlockTime = now;
+  }
+  // ----------
+  // addBlock(fingerState.x-250, fingerState.y);
   }else{
 
     // 指を立てていない時はリセット

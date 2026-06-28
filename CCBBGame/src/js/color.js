@@ -1,5 +1,3 @@
-import { connect,send } from "./websocket.js";
-
 const opponentDiv = document.getElementById("opponent");
 const selectedDiv = document.getElementById("selected");
 

@@ -7,6 +7,8 @@ let timer = null;
 
 // ターン開始
 export function startTurn(isFirstPlayer){
+  if(timer) return;
+
     turnState.isMyTurn = isFirstPlayer;
     turnState.started = true;
 
@@ -23,4 +25,16 @@ export function startTurn(isFirstPlayer){
     }
   }, 5000);
 
+}
+
+export function stopTurn() {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+
+  turnState.started = false;
+  turnState.isMyTurn = false;
+
+  console.log("ターン停止");
 }

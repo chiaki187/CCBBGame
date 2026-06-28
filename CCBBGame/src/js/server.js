@@ -44,6 +44,9 @@ let playerCount = 0;
 // プレイヤーの情報(カラー)を保存するためのMap
 const players = new Map();
 
+// ゲーム終了判定
+let gameFinished = false;
+
 console.log("サーバ起動");
 
 function sendColorState() {
@@ -96,7 +99,7 @@ function sendSelectedPlayer() {
 wss.on("connection", (ws) => {
     console.log("接続数:", wss.clients.size);
 
-    // 1. 接続したプレイヤーに一意のIDを発行して通知 (INIT)
+    // 接続したプレイヤーに一意のIDを発行して通知 (INIT)
     const playerId = Math.random().toString(36).substring(2, 9);
     
     // プレイヤー情報を初期化してMapに保存
@@ -104,7 +107,8 @@ wss.on("connection", (ws) => {
         id: playerId,
         colors: [],
         selectedColor: null,
-        decided: false
+        decided: false,
+        result: null
     });
 
     console.log("プレイヤー情報:", players.get(ws));
@@ -119,6 +123,7 @@ wss.on("connection", (ws) => {
         ws.on("message",(message)=>{
 
             const data = JSON.parse(message.toString())
+            console.log("受信データ：", data);
             console.log(data.type);
             if (data.type === "SELECT_COLOR") {
                 const playerData = players.get(ws);
@@ -141,6 +146,56 @@ wss.on("connection", (ws) => {
                     }
 
                 }
+            }
+            
+            if (data.type === "FINISH_GAME") {
+                // 既に勝敗確定済の場合
+                if (gameFinished) return;
+
+                gameFinished = true;
+
+                const me = players.get(ws);
+                if (!me) return;
+
+                // 自分の結果
+                me.result = data.result;
+
+                // 相手取得
+                let opponent = null;
+
+                players.forEach((p, key) => {
+                    if (key !== ws) {
+                        opponent = p;
+                    }
+                });
+
+                // 相手の結果を逆にする
+                if (opponent) {
+                    opponent.result =
+                        data.result === "WIN" ? "LOSE" : "WIN";
+                }
+                
+                // 全プレイヤー情報を作る
+                const resultPlayers = [];
+
+                players.forEach(p => {
+                    resultPlayers.push({
+                        id: p.id,
+                        result: p.result
+                    });
+                });
+                
+                // 全員に通知
+                const resultMessage = {
+                    type: "RESULT_PLAYERS",
+                    players: resultPlayers
+                };
+
+                wss.clients.forEach(client => {
+                    if (client.readyState === 1) {
+                        client.send(JSON.stringify(resultMessage));
+                    }
+                });
             }
 
             wss.clients.forEach(client=>{
@@ -186,6 +241,13 @@ wss.on("connection", (ws) => {
         console.log("切断");
         
         players.delete(ws);
+
+        gameFinished = false;
+
+        // 全プレイヤーの結果を削除
+        players.forEach(player => {
+            player.result = null;
+        });
 
         // 状態を全員に再送
         sendColorState();

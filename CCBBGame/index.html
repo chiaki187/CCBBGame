@@ -9,66 +9,106 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.min.js"></script>
 
     <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-        }
+      body {
+          font-family: sans-serif;
+          padding: 20px;
+      }
 
-        img {
-            width: 300px;
-            margin-top: 20px;
-        }
+      img {
+          width: 300px;
+          margin-top: 20px;
+      }
 
-        #palette, #opponent, #selected {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+      #palette, #opponent, #selected {
+          display: flex;
+          gap: 10px;
+          margin-top: 20px;
+      }
 
-        .color-box-me, .color-box-opponent, .color-box-selected {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            background: #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: white;
-            text-align: center;
-        }
+      .color-box-me, .color-box-opponent, .color-box-selected {
+          width: 80px;
+          height: 80px;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+          background: #eee;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          color: white;
+          text-align: center;
+      }
 
-        button {
-            margin-top: 10px;
-            margin-right: 10px;
-        }
+      button {
+          margin-top: 10px;
+          margin-right: 10px;
+      }
+
+      /* ルーレット */
+      .player-panel{
+          display: flex;
+          gap: 10px;
+          margin-top: 20px;
+          padding: 10px;
+          border: 4px solid transparent;
+          border-radius: 10px;
+          transition: border-color 0.15s ease;
+      }
+
+      .player-panel.active{
+          border-color: #00bfff;
+      }
 
 
-    <!--カメラ画面用-->
-    .col {
-        display: flex;
-        flex-direction: column;
-    }
-    .row {
-        display: flex;
-        flex-direction: row;
-    }
-    #camera {
-        width: 100%;
-        height:100%;
-        transform: scaleX(-1);
-    }
-    #canvas, #overlay,#matterCanvas {
-        width: 1280px;
-        height: 720px;
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-    #draw {
-        position: relative;
-    }
+      <!--カメラ画面用-->
+      .col {
+          display: flex;
+          flex-direction: column;
+      }
+      .row {
+          display: flex;
+          flex-direction: row;
+      }
+      #camera {
+          width: 100%;
+          height:100%;
+          transform: scaleX(-1);
+      }
+      #canvas, #overlay,#matterCanvas {
+          /* width: 1280px;
+          height: 720px; */
+          width: 100%;
+          height:100%;
+          position: absolute;
+          left: 0;
+          top: 0;
+      }
+      #draw {
+          position: relative;
+      }
+
+      /* 結果画面 */
+      #finishgameView {
+          position:fixed;
+          inset:0;
+          z-index:9999;
+
+          justify-content:center;
+          align-items:center;
+
+          background:rgba(0,0,0,.4);
+
+          pointer-events:none;
+      }
+
+      .result-window {
+          width:400px;
+          padding:30px;
+          border-radius:15px;
+          background:white;
+
+          pointer-events:auto;
+      }
     </style>
   </head>
   <body>
@@ -98,7 +138,7 @@
       <button id="randomBtn">ランダムカラー</button>
 
       <br>
-      <div id="palette">
+      <div id="palette" class="player-panel">
           <div class="color-box-me"></div>
           <div class="color-box-me"></div>
           <div class="color-box-me"></div>
@@ -112,7 +152,7 @@
       <button id="decideBtn">決定</button>
       
       <h2>Opponent Color</h2>
-      <div id="opponent">
+      <div id="opponent" class="player-panel">
         <div class="color-box-opponent"></div>
         <div class="color-box-opponent"></div>
         <div class="color-box-opponent"></div>
@@ -157,6 +197,17 @@
           </canvas>
           <canvas id="matterCanvas"></canvas>
         </div>
+      </div>
+    </div>
+
+    <!-- ゲーム終了画面 -->
+    <div id="finishgameView" style="display:none;">
+      <div class="result-window">
+        <h1>ゲーム終了</h1>
+
+        <h2 id="resultText"></h2>
+
+        <button id="closeResult">閉じる</button>
       </div>
     </div>
     

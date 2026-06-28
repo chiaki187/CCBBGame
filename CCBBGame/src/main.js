@@ -1,5 +1,6 @@
 import { connect,send } from "./js/websocket.js";
-import { startTurn } from "./js/time.js";
+import { startTurn, stopTurn, turnState } from "./js/time.js";
+import { playRoulette } from "./js/roulette.js";
 
 //それぞれの画面取得
 const firstView =
@@ -7,6 +8,9 @@ document.querySelector("#firstView");
 
 const startgameView =
 document.querySelector("#startgameView");
+
+const finishgameView =
+document.getElementById("finishgameView");
 
 
 //チャット用の要素取得
@@ -44,6 +48,9 @@ let selectedColor = null;
 let myColorDecided = false;
 let myColors = [];
 let myId = null;
+
+// ゲーム終了結果画面
+const resultText = document.getElementById("resultText");
 
 
 
@@ -110,12 +117,33 @@ connect((data)=>{
     }
 
     if (data.type === "SELECT_PLAYER") {
-        console.log(data.colors);
-        console.log("SELECT");
+        // const isMe = data.playerId === myId;
+        // showSelectedPalette(boxes_selected, data.colors, isMe);
+        // // ターン開始
+        // startTurn(isMe);
         const isMe = data.playerId === myId;
-        showSelectedPalette(boxes_selected, data.colors, isMe);
-        // ターン開始
-        startTurn(isMe);
+
+        playRoulette(isMe, () => {
+            showSelectedPalette(boxes_selected, data.colors, isMe);
+            startTurn(isMe);
+        });
+    }
+    
+    if (data.type === "RESULT_PLAYERS") {
+        stopTurn();
+        console.log("RESULT:", data);
+        const me = data.players.find(p => p.id === myId);
+
+        turnState.started = false;
+        turnState.isMyTurn = false;
+
+        finishgameView.style.display = "flex";
+
+        if (me.result === "WIN") {
+            resultText.textContent = "あなたの勝ち！";
+        } else {
+            resultText.textContent = "あなたの負け！";
+        }
     }
 
 });
@@ -192,6 +220,11 @@ decideBtn.addEventListener("click", () => {
     });
 
     showWaiting(myColorDecided);
+});
+
+// 結果画面閉じるボタン
+document.getElementById("closeResult").addEventListener("click", () => {
+    finishgameView.style.display = "none";
 });
 
 

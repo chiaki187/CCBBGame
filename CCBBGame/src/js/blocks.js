@@ -1,5 +1,6 @@
 import { fingerState } from "./camera";
 import { turnState } from "./time.js";
+import { send } from "./websocket.js";
 
 import Matter from "matter-js";
 const { Engine, Render, Runner, Bodies, World, Events } = Matter;
@@ -72,15 +73,17 @@ Events.on(engine, "afterUpdate", () => {
     if (body.position.y > OUT_Y) {
       isGameOver = true;
 
-      // 負け判定（今のターンの人）
-      if (turnState.isMyTurn) {
-        alert("あなたの負け！（落としました）");
-      } else {
-        alert("あなたの勝ち！（相手が落としました）");
-      }
+      const isLose = turnState.isMyTurn;
+
+      // サーバーへ送信
+      send({
+        type: "FINISH_GAME",
+        result: isLose ? "LOSE" : "WIN"
+      });
+
 
       // エンジン止める
-      Runner.stop(runner);
+      Runner.stop(Runner.create());
 
       break;
     }

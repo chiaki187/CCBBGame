@@ -1,4 +1,5 @@
 import { connect,send } from "./js/websocket.js";
+import { addBlock } from "./js/blocks.js";
 
 //それぞれの画面取得
 const firstView =
@@ -7,16 +8,17 @@ document.querySelector("#firstView");
 const startgameView =
 document.querySelector("#startgameView");
 
+const cameraView =
+document.querySelector("#cameraView");
 
-//チャット用の要素取得
-const chatInput =
-document.querySelector("#chatInput");
+const countDown =
+document.querySelector("#countDown");
 
-const sendButton =
-document.querySelector("#sendButton");
 
-const chatArea =
-document.querySelector("#chatArea");
+
+
+
+
 
 // カラー関連
 import { generatePalette, generateRandomColors
@@ -58,17 +60,6 @@ connect((data)=>{
         startgameView.style.display = "block";
     }
 
-    if(data.type === "CHAT"){
-
-        const p =
-        document.createElement("p");
-
-        p.textContent =
-        data.message;
-
-        chatArea.appendChild(p);
-
-    }
     
     if (data.type === "INIT") {
         myId = data.id;
@@ -113,31 +104,28 @@ connect((data)=>{
         console.log("SELECT");
         const isMe = data.playerId === myId;
         showSelectedPalette(boxes_selected, data.colors, isMe);
+
+        //色が決定したら　5秒後　カメラ画面表示
+        setTimeout(() => {
+            startgameView.style.display = "none";
+            cameraView.style.display = "block";
+        }, 5000);
+
+    }
+
+    if(data.type==="SPAWN_BLOCK"){
+        console.log("ブロック受信",data);
+        addBlock(
+            data.x,
+            data.y,
+            data.color
+        );
     }
 
 });
 
 
-sendButton.addEventListener("click",()=>{
 
-    const text =
-    chatInput.value;
-
-    send({
-
-        type:"CHAT",
-
-        message:text
-
-    });
-
-});
-
-
-
-
-//画像の色取得
-import { generatePalette,generateRandomColors } from "./js/color.js";
 
 
 function updateColorsFromBoxes() {
@@ -164,19 +152,9 @@ randomBtn.addEventListener("click", () => {
     fileInput.value = "";
     img.src = "";
 
-    generateRandomColors(boxes);
-});
-
-
-
-
-
-//カメラ画面
-import { setupCamera } from "./js/camera.js";
-
-setupCamera();
     generateRandomColors(boxes_me);
     updateColorsFromBoxes();
+});
 
 // 色選択
 boxes_me.forEach(box => {
@@ -204,5 +182,30 @@ decideBtn.addEventListener("click", () => {
         colors: myColors
     });
 
+    //カメラ起動は時間がかかるので先に起動を開始
+
+    setUpgameView();
+    let count=5;
+    const timer = setInterval(()=>{
+        countDown.textContent=`${count}秒後にゲーム開始です`;
+
+        if(count<=-1){
+            clearInterval(timer);
+            startgameView.style.display = "none";
+            cameraView.style.display = "block";
+        }
+        count--;
+    }, 1000);
+
     showWaiting(myColorDecided);
 });
+
+
+
+
+//カメラ画面
+import { setupCamera } from "./js/camera.js";
+
+function setUpgameView(){
+    setupCamera(myColors);
+}

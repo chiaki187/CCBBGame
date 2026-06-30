@@ -138,10 +138,7 @@ sendButton.addEventListener("click",()=>{
 
 //画像の色取得
 import { generatePalette,generateRandomColors } from "./js/color.js";
-const fileInput = document.getElementById("fileInput");
-const randomBtn = document.getElementById("randomBtn");
-const img = document.getElementById("img");
-const boxes = document.querySelectorAll(".color-box");
+
 
 function updateColorsFromBoxes() {
     myColors = Array.from(boxes_me).map(box => box.textContent);

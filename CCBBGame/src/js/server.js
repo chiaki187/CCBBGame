@@ -40,6 +40,10 @@ const wss = new WebSocketServer({
 
 
 let playerCount = 0;
+//ブロックを管理
+const gameState={
+    blocks:[]
+};
 
 // プレイヤーの情報(カラー)を保存するためのMap
 const players = new Map();
@@ -94,104 +98,129 @@ function sendSelectedPlayer() {
 }
 
 wss.on("connection", (ws) => {
+
     console.log("接続数:", wss.clients.size);
 
-    // 1. 接続したプレイヤーに一意のIDを発行して通知 (INIT)
-    const playerId = Math.random().toString(36).substring(2, 9);
-    
-    // プレイヤー情報を初期化してMapに保存
-    players.set(ws, {
-        id: playerId,
-        colors: [],
-        selectedColor: null,
-        decided: false
+
+    const playerId =
+    Math.random().toString(36).substring(2,9);
+
+
+    players.set(ws,{
+        id:playerId,
+        colors:[],
+        selectedColor:null,
+        decided:false
     });
 
-    console.log("プレイヤー情報:", players.get(ws));
 
     ws.send(JSON.stringify({
-        type: "INIT",
-        id: playerId
+        type:"INIT",
+        id:playerId
     }));
 
-    const sendPlayerCount = () => {
 
-        ws.on("message",(message)=>{
 
-            const data = JSON.parse(message.toString())
-            console.log(data.type);
-            if (data.type === "SELECT_COLOR") {
-                const playerData = players.get(ws);
-                console.log(playerData);
-                if (playerData) {
-                    playerData.colors = data.colors;
-                    playerData.selectedColor = data.selectedColor;
-                    playerData.decided = true; // 決定フラグをtrueにする
+    // ★ここに置く
+    ws.on("message",(message)=>{
 
-                    // マップの情報を更新
-                    players.set(ws, playerData);
-                    
-                    // お互いの決定状態が変わったので全員に同期
-                    sendColorState();
+        const data =
+        JSON.parse(message.toString());
 
-                    const decidedPlayers = Array.from(players.values()).filter(p => p.decided);
 
-                    if (decidedPlayers.length === 2) {
-                        sendSelectedPlayer();
-                    }
+        console.log(data.type);
+
+
+
+        if(data.type==="SELECT_COLOR"){
+
+            const playerData = players.get(ws);
+
+            if(playerData){
+
+                playerData.colors=data.colors;
+                playerData.selectedColor=data.selectedColor;
+                playerData.decided=true;
+
+                players.set(ws,playerData);
+
+
+                sendColorState();
+
+
+                const decidedPlayers =
+                Array.from(players.values())
+                .filter(p=>p.decided);
+
+
+                if(decidedPlayers.length===2){
+
+                    sendSelectedPlayer();
 
                 }
+
             }
 
-            wss.clients.forEach(client=>{
+        }
 
-                if(client.readyState === 1){
 
-                    client.send(
-                        message.toString()
-                    );
-                }
-            });
+
+        else if(data.type==="SPAWN_BLOCK"){
+            gameState.blocks.push(data);
+
+        }
+
+
+
+        // 全員へ送信
+        wss.clients.forEach(client=>{
+
+            if(client.readyState===1){
+
+                client.send(
+                    JSON.stringify(data)
+                );
+
+            }
+
         });
 
 
-        const message = {
-            type: "PLAYER_COUNT",
-            count: wss.clients.size
-        };
+    });
 
-        wss.clients.forEach(client => {
-            if (client.readyState === 1) {
-                client.send(JSON.stringify(message));
+
+
+    if(wss.clients.size===2){
+
+        wss.clients.forEach(client=>{
+
+            if(client.readyState===1){
+
+                client.send(JSON.stringify({
+                    type:"START_GAME"
+                }));
+
             }
+
         });
-    };
 
-    sendPlayerCount();
-
-    if (wss.clients.size === 2) {
-
-        const startMessage = {
-            type: "START_GAME"
-        };
-
-        wss.clients.forEach(client => {
-            if (client.readyState === 1) {
-                client.send(JSON.stringify(startMessage));
-            }
-        });
     }
 
-    ws.on("close", () => {
+
+
+    ws.on("close",()=>{
+
         console.log("切断");
-        
+
+
         players.delete(ws);
 
-        // 状態を全員に再送
+
         sendColorState();
 
-        setTimeout(sendPlayerCount, 10);
     });
+
+
 });
 
 

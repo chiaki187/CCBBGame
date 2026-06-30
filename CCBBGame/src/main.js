@@ -180,7 +180,6 @@ import { setupCamera } from "./js/camera.js";
 setupCamera();
     generateRandomColors(boxes_me);
     updateColorsFromBoxes();
-});
 
 // 色選択
 boxes_me.forEach(box => {

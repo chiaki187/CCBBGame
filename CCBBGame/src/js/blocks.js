@@ -28,9 +28,10 @@ const ground = Bodies.rectangle(320, 550, 900, 10, { isStatic: true });
 World.add(engine.world, ground);
 
 // ブロックを追加する関数
-export function addBlock(x, y){
+export function addBlock(x, y,color){
+  console.log("こんな色が来ました！"+color);
   const block = Bodies.rectangle(x, y, 60, 30, {
-    render: { fillStyle: "#e74c3c" }
+    render: { fillStyle: color }
   });
   World.add(engine.world, block);
 }

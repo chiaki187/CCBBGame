@@ -7,7 +7,6 @@ import Matter from "matter-js";
 
 const {
     Engine,
-    Runner,
     Bodies,
     World
 } = Matter;

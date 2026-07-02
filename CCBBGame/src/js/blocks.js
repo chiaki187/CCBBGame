@@ -29,6 +29,17 @@ function drawBlocks(){
         matterCanvas.height
     );
 
+    ctx.fillStyle = "#666";
+
+    ctx.fillRect(
+        320 - 900/2,
+        550 - 10/2,
+        900,
+        1000
+    );
+
+
+
 
     blocks.forEach(block=>{
 

@@ -1,5 +1,5 @@
 import { connect,send } from "./js/websocket.js";
-import { addBlock } from "./js/blocks.js";
+import { updateBlocks } from "./js/blocks.js";
 
 //それぞれの画面取得
 const firstView =
@@ -50,7 +50,6 @@ let myId = null;
 
 connect((data)=>{
 
-    console.log("受信データ:", data);
     if(data.type === "PLAYER_COUNT"){
 
 
@@ -106,20 +105,28 @@ connect((data)=>{
         showSelectedPalette(boxes_selected, data.colors, isMe);
 
         //色が決定したら　5秒後　カメラ画面表示
-        setTimeout(() => {
+        //カメラ起動は時間がかかるので先に起動を開始
+
+    setUpgameView();
+    let count=5;
+    const timer = setInterval(()=>{
+        countDown.textContent=`${count}秒後にゲーム開始です`;
+
+        if(count<=-1){
+            clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";
-        }, 5000);
+            }
+            count--;
+        }, 1000);
 
     }
 
-    if(data.type==="SPAWN_BLOCK"){
-        console.log("ブロック受信",data);
-        addBlock(
-            data.x,
-            data.y,
-            data.color
-        );
+    //ブロックの描画
+    if(data.type==="STATE"){
+        console.log("data.blocks:"+data.blocks.x);
+        updateBlocks(data.blocks);
+
     }
 
 });
@@ -181,21 +188,6 @@ decideBtn.addEventListener("click", () => {
         selectedColor: selectedColor,
         colors: myColors
     });
-
-    //カメラ起動は時間がかかるので先に起動を開始
-
-    setUpgameView();
-    let count=5;
-    const timer = setInterval(()=>{
-        countDown.textContent=`${count}秒後にゲーム開始です`;
-
-        if(count<=-1){
-            clearInterval(timer);
-            startgameView.style.display = "none";
-            cameraView.style.display = "block";
-        }
-        count--;
-    }, 1000);
 
     showWaiting(myColorDecided);
 });

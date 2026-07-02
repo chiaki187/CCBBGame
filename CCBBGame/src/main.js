@@ -1,5 +1,5 @@
 import { connect,send } from "./js/websocket.js";
-import { addBlock } from "./js/blocks.js";
+import { updateBlocks } from "./js/blocks.js";
 
 //それぞれの画面取得
 const firstView =
@@ -50,7 +50,6 @@ let myId = null;
 
 connect((data)=>{
 
-    console.log("受信データ:", data);
     if(data.type === "PLAYER_COUNT"){
 
 
@@ -123,13 +122,11 @@ connect((data)=>{
 
     }
 
-    if(data.type==="SPAWN_BLOCK"){
-        console.log("ブロック受信",data);
-        addBlock(
-            data.x,
-            data.y,
-            data.color
-        );
+    //ブロックの描画
+    if(data.type==="STATE"){
+        console.log("data.blocks:"+data.blocks.x);
+        updateBlocks(data.blocks);
+
     }
 
 });

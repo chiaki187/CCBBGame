@@ -3,6 +3,51 @@ import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import path from "path";
 import { fileURLToPath } from "url";
+import Matter from "matter-js";
+
+const {
+    Engine,
+    Runner,
+    Bodies,
+    World
+} = Matter;
+
+//物理演算準備
+const engine = Engine.create();
+
+const world = engine.world;
+
+
+// 地面
+const ground =
+Bodies.rectangle(
+    320,
+    550,
+    900,
+    10,
+    {
+        isStatic:true
+    }
+);
+
+
+World.add(
+    world,
+    ground
+);
+
+
+// 物理演算開始
+setInterval(()=>{
+
+    Engine.update(
+        engine,
+        1000 / 60
+    );
+
+},1000/60);
+
+
 
 
 // 現在のファイル場所を取得
@@ -166,26 +211,44 @@ wss.on("connection", (ws) => {
 
 
         else if(data.type==="SPAWN_BLOCK"){
-            gameState.blocks.push(data);
+            const block =
+            Bodies.rectangle(
+                data.x,
+                data.y,
+                40,
+                20,
+                {
+                    label:"block",
+                    render:{
+                        fillStyle:data.color
+                    }
+                }
+            );
+
+
+            World.add(
+                world,
+                block
+            );
 
         }
 
+        // クライアントへ返す通信
+        if(data.type !== "SPAWN_BLOCK"){
 
+            wss.clients.forEach(client=>{
 
-        // 全員へ送信
-        wss.clients.forEach(client=>{
+                if(client.readyState===1){
 
-            if(client.readyState===1){
+                    client.send(
+                        JSON.stringify(data)
+                    );
 
-                client.send(
-                    JSON.stringify(data)
-                );
+                }
 
-            }
+            });
 
-        });
-
-
+        }
     });
 
 
@@ -222,6 +285,58 @@ wss.on("connection", (ws) => {
 
 
 });
+
+
+setInterval(()=>{
+
+
+    const blocks =
+    world.bodies.filter(
+        body=>body.label==="block"
+    );
+
+
+
+    const state={
+
+        type:"STATE",
+
+        blocks:
+        blocks.map(block=>({
+
+            id:block.id,
+
+            x:block.position.x,
+
+            y:block.position.y,
+
+            angle:block.angle,
+
+            color:block.render.fillStyle
+
+        }))
+
+    };
+
+
+
+    wss.clients.forEach(client=>{
+
+
+        if(client.readyState===1){
+
+            client.send(
+                JSON.stringify(state)
+            );
+
+        }
+
+
+    });
+
+
+},50);
+
 
 
 // Renderのポート

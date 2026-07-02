@@ -2,7 +2,6 @@ import {
   GestureRecognizer,
   FilesetResolver,
 } from "@mediapipe/tasks-vision";
-import { addBlock } from "./blocks.js";
 import { connect,send } from "./websocket.js";
 
 const res = await fetch("/gesture_recognizer.task");

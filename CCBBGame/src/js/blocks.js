@@ -1,40 +1,67 @@
-import { fingerState } from "./camera";
-
-import Matter from "matter-js";
-const { Engine, Render, Runner, Bodies, World, Events } = Matter;
-
-const engine = Engine.create();
-
-// canvasに重ねて描画
 const matterCanvas =
 document.querySelector("#matterCanvas");
 
 
-const render = Render.create({
+const ctx =
+matterCanvas.getContext("2d");
 
-  canvas:matterCanvas,
 
-  engine,
+// サーバから来たブロックを保存
+let blocks = [];
 
-  options:{
-    wireframes:false,
-    background:"transparent"
-  }
 
-});
+// サーバから呼ぶ
+export function updateBlocks(serverBlocks){
 
-// 地面
-const ground = Bodies.rectangle(320, 550, 900, 10, { isStatic: true });
-World.add(engine.world, ground);
+    blocks = serverBlocks;
 
-// ブロックを追加する関数
-export function addBlock(x, y,color){
-  console.log("こんな色が来ました！"+color);
-  const block = Bodies.rectangle(x, y, 60, 30, {
-    render: { fillStyle: color }
-  });
-  World.add(engine.world, block);
+    drawBlocks();
+
 }
 
-Render.run(render);
-Runner.run(Runner.create(), engine);
+
+
+function drawBlocks(){
+    ctx.clearRect(
+        0,
+        0,
+        matterCanvas.width,
+        matterCanvas.height
+    );
+
+
+    blocks.forEach(block=>{
+
+
+        ctx.save();
+
+
+        ctx.translate(
+            block.x,
+            block.y
+        );
+
+
+        ctx.rotate(
+            block.angle
+        );
+
+
+        ctx.fillStyle =
+        block.color;
+
+
+        ctx.fillRect(
+            -30,
+            -15,
+            60,
+            30
+        );
+
+
+        ctx.restore();
+
+
+    });
+
+}

@@ -223,16 +223,20 @@ function drawFrame(camera, overlay, canvas){
     octx.fill();
 
 
-    let now =performance.now();
+    // let now =performance.now();
     if(now-lastTime>3000){
       const thisColor=colors[Math.floor(Math.random() * 8)];
+
+      
+      const worldX = (fingerState.x / overlay.width) * 1280;
+      const worldY = (fingerState.y / overlay.height) * 720;
 
 
       //ブロックの情報を通信
       const blockInfo={
         type:"SPAWN_BLOCK",
-        x:fingerState.x-250,
-        y:fingerState.y,
+        x:worldX,
+        y:worldY,
         color:thisColor
       }
       send(blockInfo);

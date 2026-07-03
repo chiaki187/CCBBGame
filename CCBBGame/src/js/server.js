@@ -8,7 +8,8 @@ import Matter from "matter-js";
 const {
     Engine,
     Bodies,
-    World
+    World,
+    Events
 } = Matter;
 
 //物理演算準備
@@ -16,19 +17,26 @@ const engine = Engine.create();
 
 const world = engine.world;
 
-
 // 地面
-const ground =
-Bodies.rectangle(
-    320,
-    550,
+let ground = null;
+
+const BASE_WIDTH = 1280;
+const BASE_HEIGHT = 720;
+
+let OUT_Y = 800;
+
+let gameFinished = false;
+
+ground = Bodies.rectangle(
+    BASE_WIDTH / 2,
+    700,
     900,
     10,
     {
-        isStatic:true
+        isStatic: true,
+        label: "ground"
     }
 );
-
 
 World.add(
     world,
@@ -127,7 +135,7 @@ function sendSelectedPlayer() {
 
     // ランダムで1人選択
     const selected = playerList[Math.floor(Math.random() * playerList.length)];
-    console.log("型:", typeof selected.colors);
+    // console.log("型:", typeof selected.colors);
     const message = {
         type: "SELECT_PLAYER",
         playerId: selected.id,
@@ -165,14 +173,13 @@ wss.on("connection", (ws) => {
 
 
 
-    // ★ここに置く
     ws.on("message",(message)=>{
 
         const data =
         JSON.parse(message.toString());
 
 
-        console.log(data.type);
+        //console.log(data.type);
 
 
 
@@ -274,15 +281,66 @@ wss.on("connection", (ws) => {
 
         console.log("切断");
 
-
+        // 切断されたプレイヤーを削除
         players.delete(ws);
+        
+        const blocks = world.bodies.filter(
+            body => body.label === "block"
+        );
 
+        // ブロックを削除
+        blocks.forEach(block => {
+            World.remove(world, block);
+        });
 
         sendColorState();
 
     });
 
 
+});
+
+Events.on(engine, "afterUpdate", ()=>{
+
+    if(gameFinished){
+        return;
+    }
+
+    for(const body of world.bodies){
+        if(body.label !== "block"){
+            continue;
+        }
+
+        if(body.position.y > OUT_Y){
+            gameFinished = true;
+            
+            console.log("Game Over");
+
+            wss.clients.forEach( client=>{
+
+                if(client.readyState === 1){
+                    client.send(
+                        JSON.stringify({
+                            type:
+                            "GAME_OVER"
+                        })
+                    );
+                }
+            });
+            break;
+        }
+    }
+});
+
+Events.on(engine, "collisionStart", event=>{
+    event.pairs.forEach( pair=>{
+        const hitGround = pair.bodyA.label === "ground" ||
+                            pair.bodyB.label === "ground";
+        
+        if(hitGround){
+            console.log("Ground接触");
+        }
+    });
 });
 
 

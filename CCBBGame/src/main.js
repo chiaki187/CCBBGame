@@ -1,5 +1,6 @@
 import { connect,send } from "./js/websocket.js";
 import { updateBlocks } from "./js/blocks.js";
+import { canvasSize } from "./js/blocks.js";
 
 //それぞれの画面取得
 const firstView =
@@ -116,6 +117,7 @@ connect((data)=>{
             clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";
+            canvasSize();
             }
             count--;
         }, 1000);
@@ -124,7 +126,6 @@ connect((data)=>{
 
     //ブロックの描画
     if(data.type==="STATE"){
-        console.log("data.blocks:"+data.blocks.x);
         updateBlocks(data.blocks);
 
     }

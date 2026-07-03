@@ -12,9 +12,14 @@ matterCanvas.getContext("2d");
 let blocks = [];
 
 
-// サーバワールドサイズ
+// 画面基本サイズ（サーバー基準）
 const BASE_WIDTH = 1280;
 const BASE_HEIGHT = 720;
+
+const canvasWidth = BASE_WIDTH / 3;
+const canvasHeight = 10;
+const canvasX = BASE_WIDTH / 2;
+const canvasY = BASE_HEIGHT - canvasHeight; 
 
 
 export function canvasSize() {
@@ -54,10 +59,10 @@ export function drawBlocks(){
     const scaleX = matterCanvas.width / BASE_WIDTH;
     const scaleY = matterCanvas.height / BASE_HEIGHT;
 
-    const groundWidth = 900 * scaleX;
-    const groundHeight = 10 * scaleY;
-    const groundX = 640 * scaleX;
-    const groundY = 700 * scaleY;
+    const groundWidth = canvasWidth * scaleX;
+    const groundHeight = canvasHeight * scaleY;
+    const groundX = canvasX * scaleX;
+    const groundY = canvasY * scaleY;
 
     ctx.fillStyle = "#666";
 

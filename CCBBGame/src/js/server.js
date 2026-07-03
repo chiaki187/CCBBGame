@@ -22,16 +22,19 @@ let ground = null;
 
 const BASE_WIDTH = 1280;
 const BASE_HEIGHT = 720;
+const groundWidth = BASE_WIDTH / 3;
+const groundHeight = 10;
+const groundX = BASE_WIDTH / 2;
+const groundY = BASE_HEIGHT - groundHeight; 
 
-let OUT_Y = 800;
-
-let gameFinished = false;
+// 画面外のY座標(ゲームオーバーライン)
+let OUT_Y = BASE_HEIGHT + 50;
 
 ground = Bodies.rectangle(
-    BASE_WIDTH / 2,
-    700,
-    900,
-    10,
+    groundX,
+    groundY,
+    groundWidth,
+    groundHeight,
     {
         isStatic: true,
         label: "ground"
@@ -53,7 +56,6 @@ setInterval(()=>{
     );
 
 },1000/60);
-
 
 
 
@@ -138,7 +140,6 @@ function sendSelectedPlayer() {
 
     // ランダムで1人選択
     const selected = playerList[Math.floor(Math.random() * playerList.length)];
-    // console.log("型:", typeof selected.colors);
     const message = {
         type: "SELECT_PLAYER",
         playerId: selected.id,
@@ -165,7 +166,7 @@ wss.on("connection", (ws) => {
         colors: [],
         selectedColor: null,
         decided: false,
-        result: null
+        isMyTurn: false
     });
 
 
@@ -180,10 +181,6 @@ wss.on("connection", (ws) => {
 
         const data =
         JSON.parse(message.toString());
-
-
-        //console.log(data.type);
-
 
 
         if(data.type==="SELECT_COLOR"){
@@ -214,59 +211,18 @@ wss.on("connection", (ws) => {
                 }
 
             }
-            
-            if (data.type === "FINISH_GAME") {
-                // 既に勝敗確定済の場合
-                if (gameFinished) return;
-
-                gameFinished = true;
-
-                const me = players.get(ws);
-                if (!me) return;
-
-                // 自分の結果
-                me.result = data.result;
-
-                // 相手取得
-                let opponent = null;
-
-                players.forEach((p, key) => {
-                    if (key !== ws) {
-                        opponent = p;
-                    }
-                });
-
-                // 相手の結果を逆にする
-                if (opponent) {
-                    opponent.result =
-                        data.result === "WIN" ? "LOSE" : "WIN";
-                }
-                
-                // 全プレイヤー情報を作る
-                const resultPlayers = [];
-
-                players.forEach(p => {
-                    resultPlayers.push({
-                        id: p.id,
-                        result: p.result
-                    });
-                });
-                
-                // 全員に通知
-                const resultMessage = {
-                    type: "RESULT_PLAYERS",
-                    players: resultPlayers
-                };
-
-                wss.clients.forEach(client => {
-                    if (client.readyState === 1) {
-                        client.send(JSON.stringify(resultMessage));
-                    }
-                });
-            }
 
         }
 
+        if(data.type === "TURN_UPDATE"){
+
+            const player = players.get(ws);
+
+            if(player){
+
+                player.isMyTurn = data.isMyTurn;
+            }
+        }
 
 
         else if(data.type==="SPAWN_BLOCK"){
@@ -350,7 +306,7 @@ wss.on("connection", (ws) => {
 
         // 全プレイヤーの結果を削除
         players.forEach(player => {
-            player.result = null;
+            player.isMyTurn = false;
         });
 
         // 状態を全員に再送
@@ -374,16 +330,22 @@ Events.on(engine, "afterUpdate", ()=>{
 
         if(body.position.y > OUT_Y){
             gameFinished = true;
-            
             console.log("Game Over");
+            const resultPlayers = [];
+            
+            players.forEach(player => {
+                resultPlayers.push({
+                    id: player.id,
+                    result: player.isMyTurn ? "LOSE" : "WIN"
+                });
+            });
 
-            wss.clients.forEach( client=>{
-
+            wss.clients.forEach(client =>{
                 if(client.readyState === 1){
                     client.send(
                         JSON.stringify({
-                            type:
-                            "GAME_OVER"
+                            type: "RESULT_PLAYERS",
+                            players: resultPlayers
                         })
                     );
                 }

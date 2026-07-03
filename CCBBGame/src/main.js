@@ -23,8 +23,6 @@ document.querySelector("#countDown");
 
 
 
-
-
 // カラー関連
 import { generatePalette, generateRandomColors
     ,showWaiting ,showOpponentPalette, showSelectedPalette
@@ -107,15 +105,12 @@ connect((data)=>{
     }
 
     if (data.type === "SELECT_PLAYER") {
-        // const isMe = data.playerId === myId;
-        // showSelectedPalette(boxes_selected, data.colors, isMe);
-        // // ターン開始
-        // startTurn(isMe);
         const isMe = data.playerId === myId;
 
+        // カラールーレット開始
         playRoulette(isMe, () => {
             showSelectedPalette(boxes_selected, data.colors, isMe);
-            startTurn(isMe);
+            startCountDown(isMe);
         });
     }
     
@@ -135,26 +130,7 @@ connect((data)=>{
             resultText.textContent = "あなたの負け！";
         }
     }
-        showSelectedPalette(boxes_selected, data.colors, isMe);
 
-        //色が決定したら　5秒後　カメラ画面表示
-        //カメラ起動は時間がかかるので先に起動を開始
-
-    setUpgameView();
-    let count=5;
-    const timer = setInterval(()=>{
-        countDown.textContent=`${count}秒後にゲーム開始です`;
-
-        if(count<=-1){
-            clearInterval(timer);
-            startgameView.style.display = "none";
-            cameraView.style.display = "block";
-            canvasSize();
-            }
-            count--;
-        }, 1000);
-
-    }
 
     //ブロックの描画
     if(data.type==="STATE"){
@@ -163,8 +139,6 @@ connect((data)=>{
     }
 
 });
-
-
 
 
 
@@ -231,6 +205,30 @@ document.getElementById("closeResult").addEventListener("click", () => {
 });
 
 
+// ゲーム開始カウントダウン
+function startCountDown(isMe) {
+
+    // カメラは先に起動
+    setUpgameView();
+
+    let count = 5;
+    countDown.textContent = `${count}秒後にゲーム開始です`;
+
+    const timer = setInterval(() => {
+
+        count--;
+        countDown.textContent = `${count}秒後にゲーム開始です`;
+
+        if (count <= 0) {
+            clearInterval(timer);
+            startgameView.style.display = "none";
+            cameraView.style.display = "block";
+            canvasSize();
+            startTurn(isMe);
+        }
+
+    }, 1000);
+}
 
 
 //カメラ画面

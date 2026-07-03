@@ -1,96 +1,105 @@
-import { fingerState } from "./camera";
-import { turnState } from "./time.js";
 import { send } from "./websocket.js";
 
-import Matter from "matter-js";
-const { Engine, Render, Runner, Bodies, World, Events } = Matter;
-
-const engine = Engine.create();
-
-// canvasに重ねて描画
 const matterCanvas =
 document.querySelector("#matterCanvas");
 
 
-const render = Render.create({
+const ctx =
+matterCanvas.getContext("2d");
 
-  canvas:matterCanvas,
 
-  engine,
+// サーバから来たブロックを保存
+let blocks = [];
 
-  options:{
-    wireframes:false,
-    background:"transparent"
-  }
 
-});
+// サーバワールドサイズ
+const BASE_WIDTH = 1280;
+const BASE_HEIGHT = 720;
 
-const canvasWidth = render.canvas.width;
-const canvasHeight = render.canvas.height;
 
-// 地面
-// const ground = Bodies.rectangle(320, 550, 900, 10, { isStatic: true });
-const groundWidth = canvasWidth / 3;
-const groundHeight = 10;
-const groundX = canvasWidth / 2;// - groundWidth / 2;
-const groundY = canvasHeight - groundHeight; 
-console.log(canvasWidth, canvasHeight);
-const ground = Bodies.rectangle(
-  groundX,   // 横中央
-  groundY,
-  groundWidth,       // 幅も自動で合わせる
-  groundHeight,
-  { isStatic: true }
-);
+export function canvasSize() {
+    matterCanvas.width = matterCanvas.clientWidth;
+    matterCanvas.height = matterCanvas.clientHeight;
 
-// 落下判定ライン（これより下に行ったらアウト）
-const OUT_Y = groundY + 100;
-
-// ゲーム終了判定
-let isGameOver = false;
-
-World.add(engine.world, ground);
-
-// ブロックを追加する関数
-export function addBlock(x, y){
-  const block = Bodies.rectangle(x, y, 60, 30, {
-    render: { fillStyle: "#e74c3c" }
-  });
-  World.add(engine.world, block);
+    drawBlocks();
 }
 
-
-Events.on(engine, "afterUpdate", () => {
-  if (isGameOver) return;
-
-  const bodies = engine.world.bodies;
-
-  for (const body of bodies) {
-    // 地面は除外
-    if (body === ground) continue;
-
-    // 落下チェック
-    if (body.position.y > OUT_Y) {
-      isGameOver = true;
-
-      const isLose = turnState.isMyTurn;
-
-      // サーバーへ送信
-      send({
-        type: "FINISH_GAME",
-        result: isLose ? "LOSE" : "WIN"
-      });
-
-
-      // エンジン止める
-      Runner.stop(Runner.create());
-
-      break;
-    }
-  }
+// 画面サイズ変更
+window.addEventListener("resize", () => {
+    canvasSize();
 });
 
 
+// サーバから呼ぶ
+export function updateBlocks(serverBlocks){
 
-Render.run(render);
-Runner.run(Runner.create(), engine);
+    blocks = serverBlocks;
+
+    drawBlocks();
+
+}
+
+export function drawBlocks(){
+
+    ctx.clearRect(
+        0,
+        0,
+        matterCanvas.width,
+        matterCanvas.height
+    );
+    
+    // 画面サイズに合わせて描画(ブロック、地面)
+    
+    // 現在の画面幅に対する倍率
+    const scaleX = matterCanvas.width / BASE_WIDTH;
+    const scaleY = matterCanvas.height / BASE_HEIGHT;
+
+    const groundWidth = 900 * scaleX;
+    const groundHeight = 10 * scaleY;
+    const groundX = 640 * scaleX;
+    const groundY = 700 * scaleY;
+
+    ctx.fillStyle = "#666";
+
+    ctx.fillRect(
+        groundX - groundWidth / 2,
+        groundY - groundHeight / 2,
+        groundWidth,
+        groundHeight
+    );
+
+    blocks.forEach(block=>{
+
+
+        ctx.save();
+
+
+        ctx.translate(
+            block.x * scaleX,
+            block.y * scaleY
+        );
+
+
+        ctx.rotate(
+            block.angle
+        );
+
+
+        ctx.fillStyle =
+        block.color;
+
+
+        ctx.fillRect(            
+            -20 * scaleX,
+            -10 * scaleY,
+             40 * scaleX,
+             20 * scaleY
+        );
+
+
+        ctx.restore();
+
+
+    });
+
+}

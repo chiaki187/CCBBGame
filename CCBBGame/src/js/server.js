@@ -3,6 +3,58 @@ import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import path from "path";
 import { fileURLToPath } from "url";
+import Matter from "matter-js";
+
+const {
+    Engine,
+    Bodies,
+    World,
+    Events
+} = Matter;
+
+//物理演算準備
+const engine = Engine.create();
+
+const world = engine.world;
+
+// 地面
+let ground = null;
+
+const BASE_WIDTH = 1280;
+const BASE_HEIGHT = 720;
+
+let OUT_Y = 800;
+
+let gameFinished = false;
+
+ground = Bodies.rectangle(
+    BASE_WIDTH / 2,
+    700,
+    900,
+    10,
+    {
+        isStatic: true,
+        label: "ground"
+    }
+);
+
+World.add(
+    world,
+    ground
+);
+
+
+// 物理演算開始
+setInterval(()=>{
+
+    Engine.update(
+        engine,
+        1000 / 60
+    );
+
+},1000/60);
+
+
 
 
 // 現在のファイル場所を取得
@@ -40,6 +92,10 @@ const wss = new WebSocketServer({
 
 
 let playerCount = 0;
+//ブロックを管理
+const gameState={
+    blocks:[]
+};
 
 // プレイヤーの情報(カラー)を保存するためのMap
 const players = new Map();
@@ -82,7 +138,7 @@ function sendSelectedPlayer() {
 
     // ランダムで1人選択
     const selected = playerList[Math.floor(Math.random() * playerList.length)];
-    console.log("型:", typeof selected.colors);
+    // console.log("型:", typeof selected.colors);
     const message = {
         type: "SELECT_PLAYER",
         playerId: selected.id,
@@ -97,6 +153,7 @@ function sendSelectedPlayer() {
 }
 
 wss.on("connection", (ws) => {
+
     console.log("接続数:", wss.clients.size);
 
     // 接続したプレイヤーに一意のIDを発行して通知 (INIT)
@@ -111,41 +168,51 @@ wss.on("connection", (ws) => {
         result: null
     });
 
-    console.log("プレイヤー情報:", players.get(ws));
 
     ws.send(JSON.stringify({
-        type: "INIT",
-        id: playerId
+        type:"INIT",
+        id:playerId
     }));
 
-    const sendPlayerCount = () => {
 
-        ws.on("message",(message)=>{
 
-            const data = JSON.parse(message.toString())
-            console.log("受信データ：", data);
-            console.log(data.type);
-            if (data.type === "SELECT_COLOR") {
-                const playerData = players.get(ws);
-                console.log(playerData);
-                if (playerData) {
-                    playerData.colors = data.colors;
-                    playerData.selectedColor = data.selectedColor;
-                    playerData.decided = true; // 決定フラグをtrueにする
+    ws.on("message",(message)=>{
 
-                    // マップの情報を更新
-                    players.set(ws, playerData);
-                    
-                    // お互いの決定状態が変わったので全員に同期
-                    sendColorState();
+        const data =
+        JSON.parse(message.toString());
 
-                    const decidedPlayers = Array.from(players.values()).filter(p => p.decided);
 
-                    if (decidedPlayers.length === 2) {
-                        sendSelectedPlayer();
-                    }
+        //console.log(data.type);
+
+
+
+        if(data.type==="SELECT_COLOR"){
+
+            const playerData = players.get(ws);
+
+            if(playerData){
+
+                playerData.colors=data.colors;
+                playerData.selectedColor=data.selectedColor;
+                playerData.decided=true;
+
+                players.set(ws,playerData);
+
+
+                sendColorState();
+
+
+                const decidedPlayers =
+                Array.from(players.values())
+                .filter(p=>p.decided);
+
+
+                if(decidedPlayers.length===2){
+
+                    sendSelectedPlayer();
 
                 }
+
             }
             
             if (data.type === "FINISH_GAME") {
@@ -198,49 +265,86 @@ wss.on("connection", (ws) => {
                 });
             }
 
+        }
+
+
+
+        else if(data.type==="SPAWN_BLOCK"){
+            const block =
+            Bodies.rectangle(
+                data.x,
+                data.y,
+                40,
+                20,
+                {
+                    label:"block",
+                    render:{
+                        fillStyle:data.color
+                    }
+                }
+            );
+
+
+            World.add(
+                world,
+                block
+            );
+
+        }
+
+        // クライアントへ返す通信
+        if(data.type !== "SPAWN_BLOCK"){
+
             wss.clients.forEach(client=>{
 
-                if(client.readyState === 1){
+                if(client.readyState===1){
 
                     client.send(
-                        message.toString()
+                        JSON.stringify(data)
                     );
+
                 }
+
             });
-        });
+
+        }
+    });
 
 
-        const message = {
-            type: "PLAYER_COUNT",
-            count: wss.clients.size
-        };
 
-        wss.clients.forEach(client => {
-            if (client.readyState === 1) {
-                client.send(JSON.stringify(message));
+    if(wss.clients.size===2){
+
+        wss.clients.forEach(client=>{
+
+            if(client.readyState===1){
+
+                client.send(JSON.stringify({
+                    type:"START_GAME"
+                }));
+
             }
+
         });
-    };
 
-    sendPlayerCount();
-
-    if (wss.clients.size === 2) {
-
-        const startMessage = {
-            type: "START_GAME"
-        };
-
-        wss.clients.forEach(client => {
-            if (client.readyState === 1) {
-                client.send(JSON.stringify(startMessage));
-            }
-        });
     }
 
-    ws.on("close", () => {
+
+
+    ws.on("close",()=>{
+
         console.log("切断");
-        
+
+        // 切断されたプレイヤーを削除
         players.delete(ws);
+        
+        const blocks = world.bodies.filter(
+            body => body.label === "block"
+        );
+
+        // ブロックを削除
+        blocks.forEach(block => {
+            World.remove(world, block);
+        });
 
         gameFinished = false;
 
@@ -252,9 +356,105 @@ wss.on("connection", (ws) => {
         // 状態を全員に再送
         sendColorState();
 
-        setTimeout(sendPlayerCount, 10);
+    });
+
+
+});
+
+Events.on(engine, "afterUpdate", ()=>{
+
+    if(gameFinished){
+        return;
+    }
+
+    for(const body of world.bodies){
+        if(body.label !== "block"){
+            continue;
+        }
+
+        if(body.position.y > OUT_Y){
+            gameFinished = true;
+            
+            console.log("Game Over");
+
+            wss.clients.forEach( client=>{
+
+                if(client.readyState === 1){
+                    client.send(
+                        JSON.stringify({
+                            type:
+                            "GAME_OVER"
+                        })
+                    );
+                }
+            });
+            break;
+        }
+    }
+});
+
+Events.on(engine, "collisionStart", event=>{
+    event.pairs.forEach( pair=>{
+        const hitGround = pair.bodyA.label === "ground" ||
+                            pair.bodyB.label === "ground";
+        
+        if(hitGround){
+            console.log("Ground接触");
+        }
     });
 });
+
+
+setInterval(()=>{
+
+
+    const blocks =
+    world.bodies.filter(
+        body=>body.label==="block"
+    );
+
+
+
+    const state={
+
+        type:"STATE",
+
+        blocks:
+        blocks.map(block=>({
+
+            id:block.id,
+
+            x:block.position.x,
+
+            y:block.position.y,
+
+            angle:block.angle,
+
+            color:block.render.fillStyle
+
+        }))
+
+    };
+
+
+
+    wss.clients.forEach(client=>{
+
+
+        if(client.readyState===1){
+
+            client.send(
+                JSON.stringify(state)
+            );
+
+        }
+
+
+    });
+
+
+},50);
+
 
 
 // Renderのポート

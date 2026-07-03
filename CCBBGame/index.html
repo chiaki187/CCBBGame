@@ -122,10 +122,6 @@
     <div id="startgameView" style="display:none;">
       <h1>ゲームを始めます</h1>
 
-      <input id="chatInput">
-      <button id="sendButton">送信</button>
-      <div id="chatArea"></div>
-
 
       <h1>Color Palette</h1>
 
@@ -174,13 +170,14 @@
         <div class="color-box-selected"></div>
       </div>
 
+      <div id="countDown"></div>
       <script type="module" src="/src/main.js"></script>
 
     </div>
 
 
     <!--カメラ画面-->
-    <div id="cameraView">
+    <div id="cameraView" style="display:none;">
       <div class="col">
         <div id="cam" class="row">
           <div class="col">
@@ -195,7 +192,7 @@
           </video>
           <canvas id="overlay" width="1280" height="720">
           </canvas>
-          <canvas id="matterCanvas"></canvas>
+          <canvas id="matterCanvas" width="1280" height="720"></canvas>
         </div>
       </div>
     </div>

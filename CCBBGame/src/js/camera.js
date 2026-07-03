@@ -2,17 +2,25 @@ import {
   GestureRecognizer,
   FilesetResolver,
 } from "@mediapipe/tasks-vision";
-import { addBlock } from "./blocks.js";
 import { turnState } from "./time.js";
+import { connect,send } from "./websocket.js";
 
 const res = await fetch("/gesture_recognizer.task");
 console.log(res.status);
 console.log(res.headers.get("content-type"));
 
 
+//タイマー
+let spawnTimer = 0;
+let lastTime = 0;
+
+
 let handGesture;
 let prevX = null; // ← 追加
 let prevY = null; // ← 追加
+
+//決定した色を入れておく箱
+let colors=[];
 
 
 async function initDetector() {
@@ -43,10 +51,14 @@ async function initDetector() {
 
 
 
-export async function setupCamera(){
+export async function setupCamera(color){
 
   await initDetector();
 
+  colors=color;
+  color.forEach((color)=>{
+    console.log("こんなカラーです"+color);
+  });
 
   const camera =
     document.querySelector("#camera");
@@ -230,12 +242,36 @@ function drawFrame(camera, overlay, canvas){
     octx.fill();
 
   // 仮--------
-  if (now - lastBlockTime > 500) { // 0.5秒間隔でブロック生成
-    addBlock(fingerState.x - 250, fingerState.y);
-    lastBlockTime = now;
-  }
+//   if (now - lastBlockTime > 500) { // 0.5秒間隔でブロック生成
+//     addBlock(fingerState.x - 250, fingerState.y);
+//     lastBlockTime = now;
+//   }
   // ----------
   // addBlock(fingerState.x-250, fingerState.y);
+
+    // let now =performance.now();
+    if(now-lastTime>3000){
+      const thisColor=colors[Math.floor(Math.random() * 8)];
+
+      
+      const worldX = (fingerState.x / overlay.width) * 1280;
+      const worldY = (fingerState.y / overlay.height) * 720;
+
+
+      //ブロックの情報を通信
+      const blockInfo={
+        type:"SPAWN_BLOCK",
+        x:worldX,
+        y:worldY,
+        color:thisColor
+      }
+      send(blockInfo);
+
+      lastTime = now;
+    }
+   
+
+
   }else{
 
     // 指を立てていない時はリセット

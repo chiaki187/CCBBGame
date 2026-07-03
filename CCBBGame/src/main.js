@@ -1,6 +1,8 @@
 import { connect,send } from "./js/websocket.js";
 import { startTurn, stopTurn, turnState } from "./js/time.js";
 import { playRoulette } from "./js/roulette.js";
+import { updateBlocks } from "./js/blocks.js";
+import { canvasSize } from "./js/blocks.js";
 
 //それぞれの画面取得
 const firstView =
@@ -11,17 +13,17 @@ document.querySelector("#startgameView");
 
 const finishgameView =
 document.getElementById("finishgameView");
+const cameraView =
+document.querySelector("#cameraView");
+
+const countDown =
+document.querySelector("#countDown");
 
 
-//チャット用の要素取得
-const chatInput =
-document.querySelector("#chatInput");
 
-const sendButton =
-document.querySelector("#sendButton");
 
-const chatArea =
-document.querySelector("#chatArea");
+
+
 
 // カラー関連
 import { generatePalette, generateRandomColors
@@ -56,7 +58,6 @@ const resultText = document.getElementById("resultText");
 
 connect((data)=>{
 
-    console.log("受信データ:", data);
     if(data.type === "PLAYER_COUNT"){
 
 
@@ -66,17 +67,6 @@ connect((data)=>{
         startgameView.style.display = "block";
     }
 
-    if(data.type === "CHAT"){
-
-        const p =
-        document.createElement("p");
-
-        p.textContent =
-        data.message;
-
-        chatArea.appendChild(p);
-
-    }
     
     if (data.type === "INIT") {
         myId = data.id;
@@ -145,24 +135,37 @@ connect((data)=>{
             resultText.textContent = "あなたの負け！";
         }
     }
+        showSelectedPalette(boxes_selected, data.colors, isMe);
+
+        //色が決定したら　5秒後　カメラ画面表示
+        //カメラ起動は時間がかかるので先に起動を開始
+
+    setUpgameView();
+    let count=5;
+    const timer = setInterval(()=>{
+        countDown.textContent=`${count}秒後にゲーム開始です`;
+
+        if(count<=-1){
+            clearInterval(timer);
+            startgameView.style.display = "none";
+            cameraView.style.display = "block";
+            canvasSize();
+            }
+            count--;
+        }, 1000);
+
+    }
+
+    //ブロックの描画
+    if(data.type==="STATE"){
+        updateBlocks(data.blocks);
+
+    }
 
 });
 
 
-sendButton.addEventListener("click",()=>{
 
-    const text =
-    chatInput.value;
-
-    send({
-
-        type:"CHAT",
-
-        message:text
-
-    });
-
-});
 
 
 function updateColorsFromBoxes() {
@@ -233,4 +236,6 @@ document.getElementById("closeResult").addEventListener("click", () => {
 //カメラ画面
 import { setupCamera } from "./js/camera.js";
 
-setupCamera();
+function setUpgameView(){
+    setupCamera(myColors);
+}

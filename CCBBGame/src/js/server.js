@@ -9,13 +9,22 @@ const {
     Engine,
     Bodies,
     World,
-    Events
+    Events,
+    Body
 } = Matter;
 
 //物理演算準備
 const engine = Engine.create();
 
 const world = engine.world;
+
+// ターン管理
+let turnIndex = 0;
+let turnTimer = null;
+
+let mainTurnStarted = false;
+
+let dropCountdown = 5; // ブロック落下までのカウントダウン時間（秒）
 
 // 地面
 let ground = null;
@@ -26,6 +35,9 @@ const groundWidth = BASE_WIDTH / 3;
 const groundHeight = 10;
 const groundX = BASE_WIDTH / 2;
 const groundY = BASE_HEIGHT - groundHeight; 
+
+const blockWidth = 80;
+const blockHeight = 40;
 
 // 画面外のY座標(ゲームオーバーライン)
 let OUT_Y = BASE_HEIGHT + 50;
@@ -166,7 +178,11 @@ wss.on("connection", (ws) => {
         colors: [],
         selectedColor: null,
         decided: false,
-        isMyTurn: false
+        isMyTurn: false,
+        currentBlock: null, // 現在のブロック情報
+        currentColor: null, // 現在のブロックの色
+        previewX: BASE_WIDTH / 2, // 仮ブロックの初期位置x
+        previewY: 50 // 仮ブロックの初期位置y
     });
 
 
@@ -176,12 +192,10 @@ wss.on("connection", (ws) => {
     }));
 
 
-
     ws.on("message",(message)=>{
 
         const data =
         JSON.parse(message.toString());
-
 
         if(data.type==="SELECT_COLOR"){
 
@@ -195,9 +209,7 @@ wss.on("connection", (ws) => {
 
                 players.set(ws,playerData);
 
-
                 sendColorState();
-
 
                 const decidedPlayers =
                 Array.from(players.values())
@@ -205,52 +217,58 @@ wss.on("connection", (ws) => {
 
 
                 if(decidedPlayers.length===2){
-
                     sendSelectedPlayer();
-
                 }
-
             }
+        }
 
+        if(data.type === "START_MAIN_TURN") {
+            if (mainTurnStarted) {
+                return;
+            }
+            mainTurnStarted = true;
+            console.log("メインターン開始");
+
+            startMainTurn();
+            delete data.type;
         }
 
         if(data.type === "TURN_UPDATE"){
-
             const player = players.get(ws);
-
             if(player){
-
                 player.isMyTurn = data.isMyTurn;
             }
         }
 
+        else if(data.type === "PREPARE_BLOCK"){
+            const player = players.get(ws);
 
-        else if(data.type==="SPAWN_BLOCK"){
-            const block =
-            Bodies.rectangle(
-                data.x,
-                data.y,
-                40,
-                20,
-                {
-                    label:"block",
-                    render:{
-                        fillStyle:data.color
-                    }
-                }
-            );
+            if(!player){
+                return;
+            }
 
+            player.currentColor = data.color;
 
-            World.add(
-                world,
-                block
-            );
+            player.previewX = BASE_WIDTH / 2;
+            player.previewY = 50;
+        }
+        else if(data.type === "MOVE_BLOCK"){ // ブロックの位置移動(x座標のみ)
+            const player = players.get(ws);
+            
+            if(!player){
+                return;
+            }
+
+            if(!player.isMyTurn){
+                return;
+            }
+
+            player.previewX = data.x;
 
         }
 
         // クライアントへ返す通信
-        if(data.type !== "SPAWN_BLOCK"){
-
+        if(data.type !== "SPAWN_BLOCK" && data.type!="MOVE_BLOCK"){
             wss.clients.forEach(client=>{
 
                 if(client.readyState===1){
@@ -258,11 +276,8 @@ wss.on("connection", (ws) => {
                     client.send(
                         JSON.stringify(data)
                     );
-
                 }
-
             });
-
         }
     });
 
@@ -277,11 +292,8 @@ wss.on("connection", (ws) => {
                 client.send(JSON.stringify({
                     type:"START_GAME"
                 }));
-
             }
-
         });
-
     }
 
 
@@ -311,10 +323,7 @@ wss.on("connection", (ws) => {
 
         // 状態を全員に再送
         sendColorState();
-
     });
-
-
 });
 
 Events.on(engine, "afterUpdate", ()=>{
@@ -336,7 +345,7 @@ Events.on(engine, "afterUpdate", ()=>{
             players.forEach(player => {
                 resultPlayers.push({
                     id: player.id,
-                    result: player.isMyTurn ? "LOSE" : "WIN"
+                    result: !player.isMyTurn ? "LOSE" : "WIN"
                 });
             });
 
@@ -366,55 +375,154 @@ Events.on(engine, "collisionStart", event=>{
     });
 });
 
+function startMainTurn() {
+    if(gameFinished){
+        return;
+    }
+
+    const playerSockets = Array.from(players.keys());
+
+    if (playerSockets.length < 2) {
+        return;
+    }
+
+    const currentWs = playerSockets[turnIndex];
+    const currentPlayer = players.get(currentWs);
+
+    currentPlayer.isMyTurn = true;
+
+    currentWs.send(JSON.stringify({
+        type: "YOUR_TURN"
+    }));
+
+    console.log("ターン開始:", currentPlayer.id);
+
+    // カウントダウン開始
+    let count = 5;
+
+    wss.clients.forEach(client => {
+        if (client.readyState === 1) {
+            client.send(JSON.stringify({
+                type: "DROP_COUNTDOWN",
+                count: count
+            }));
+        }
+    });
+
+    turnTimer = setInterval(() => {
+        if(gameFinished){
+            return;
+        }
+        count--;
+
+        wss.clients.forEach(client => {
+            if (client.readyState === 1) {
+                client.send(JSON.stringify({
+                    type: "DROP_COUNTDOWN",
+                    count: count
+                }));
+            }
+        });
+
+        if (count > 0) {
+            return;
+        }
+
+        clearInterval(turnTimer);
+
+        wss.clients.forEach(client => {
+            if (client.readyState === 1) {
+                client.send(JSON.stringify({
+                    type: "DROP"
+                }));
+            }
+        });
+        // ブロックを生成して落下させる
+        const color = currentPlayer.currentColor;
+        if (color) {
+
+            const realBlock =
+                Bodies.rectangle(
+                    currentPlayer.previewX,
+                    currentPlayer.previewY,
+                    blockWidth,
+                    blockHeight,
+                    {
+                        label: "block",
+                        restitution: 0,
+                        friction: 0.8,
+                        frictionStatic: 1,
+                        render: {
+                            fillStyle: color
+                        }
+                    }
+                );
+
+            World.add(world, realBlock);
+        }
+
+        currentPlayer.isMyTurn = false;
+
+        currentWs.send(JSON.stringify({
+            type: "END_TURN"
+        }));
+
+        turnIndex = (turnIndex + 1) % playerSockets.length;
+
+        startMainTurn();
+
+    }, 1000);
+
+}
 
 setInterval(()=>{
 
-
-    const blocks =
-    world.bodies.filter(
+    const blockStates =
+    world.bodies
+    .filter(
         body=>body.label==="block"
+    )
+    .map(
+        block=>({
+            id:block.id,
+            x:block.position.x,
+            y:block.position.y,
+            angle:block.angle,
+            color:block.render.fillStyle,
+            label:block.label
+        })
     );
 
-
+    players.forEach(player => {
+        if(
+            player.isMyTurn &&
+            player.currentColor
+        ){
+            blockStates.push({
+                id:"preview",
+                x:player.previewX,
+                y:player.previewY,
+                angle:0,
+                color:player.currentColor,
+                label:"preview"
+            });
+        }
+    });
 
     const state={
-
-        type:"STATE",
-
-        blocks:
-        blocks.map(block=>({
-
-            id:block.id,
-
-            x:block.position.x,
-
-            y:block.position.y,
-
-            angle:block.angle,
-
-            color:block.render.fillStyle
-
-        }))
-
+        type: "STATE",
+        blocks: blockStates
     };
-
 
 
     wss.clients.forEach(client=>{
 
-
         if(client.readyState===1){
-
             client.send(
                 JSON.stringify(state)
             );
-
         }
-
-
     });
-
-
 },50);
 
 

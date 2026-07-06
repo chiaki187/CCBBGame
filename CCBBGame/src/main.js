@@ -140,6 +140,19 @@ connect((data)=>{
         turnPlayer.textContent = "相手のターンです";
         turnState.isMyTurn = false;
     }
+
+    if(data.type === "OPPONENT_DISCONNECTED"){
+        stopTurn();
+
+        turnState.started = false;
+        turnState.isMyTurn = false;
+
+        alert("相手が切断しました");
+
+        location.reload();
+
+        return;
+    }
     
     if (data.type === "RESULT_PLAYERS") {
         stopTurn();
@@ -264,9 +277,11 @@ function startCountDown(isMe) {
             turnPlayer.textContent = isMe ? "あなたのターンです" : "相手のターンです";
             canvasSize();
             startTurn();
-            send({
-                type: "START_MAIN_TURN"
-            });
+            if(isMe){
+                send({
+                    type: "START_MAIN_TURN"
+                });
+            }
         }
 
     }, 1000);

@@ -1,0 +1,106 @@
+body{
+    background-color: #F9F9F9;
+    margin: 0;
+    overflow-y: auto;
+}
+.bigtext{
+    font-size: 35px;
+    font-weight: bold;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  
+}
+
+.row{
+    gap:20px;
+}
+
+.container {
+  display: flex;
+  gap: 15px;
+  justify-content: center;   /* ← これを追加！ */
+}
+
+/* ここがポイント */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+}
+
+
+.minicontainer {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size:50px;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.minibox {
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.red { background: #FA8B8A; }
+.yellow { background: #FACA57; }
+.green { background: #68D4CB; }
+.purle { background: #AB99E0; }
+
+
+button{
+    padding: 15px 150px;
+
+
+    background-color: black;
+    font-size:20px;
+    color: white;
+   
+    border-radius: 10px;
+    border: none;              /* 枠線消す */
+    box-shadow: none;          /* 影消す */
+    appearance: none;         /* ←これ重要（Mac/Chrome対策） */
+    -webkit-appearance: none; /* Safari対策 */
+}
+
+.card {
+  flex: 1;
+  height: 450px;
+  flex-shrink: 0;
+  background: rgb(255, 255, 255);
+  border-radius: 12px;
+  padding: 20px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.transparentcard {
+  flex: 1;
+  height: 450px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  padding: 20px;
+}

@@ -37,6 +37,7 @@
             font-size: 10px;
             color: white;
             text-align: center;
+            gap: 50px;
         }
 
         button {
@@ -70,69 +71,136 @@
         position: relative;
     }
     </style>
+
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
 
-    <!--初期画面-->
+    <!--タイトル画面-->
     <div id="firstView">
-      <h1>通信を待っています</h1>
+      <div class="center">
+        <div class="container">
+          <div class="box red">C</div>
+          <div class="box yellow">C</div>
+          <div class="box green">B</div>
+          <div class="box purle">B</div>
+        </div>
+
+        <div style="font-size: 80px;">Game</div>
+        <div style="font-size: 20px;">カラーカスタム積み木ゲーム</div>
+
+
+        <button style="position: relative; top: 10vh;" >Start</button>
+      </div>
     </div>
 
     <!--ゲーム開始画面-->
     <div id="startgameView" style="display:none;">
-      <h1>ゲームを始めます</h1>
+      <div class="center">
+        <div class="minicontainer">
+          <div class="minibox red"></div>
+          <div class="minibox yellow"></div>
+          <div class="minibox green"></div>
+          <div class="minibox purle"></div>
+        </div>
+       
+         
+        <div class="bigtext">写真から色を検出して</div>
+        <div class="bigtext" >積み木の色を
+          <span style="color:#FA8B8A;">カ</span>
+          <span style="color:#FACA57;">ス</span>
+          <span style="color:#68D4CB;">タ</span>
+          <span style="color:#AB99E0;">ム</span>
+          しよう！</div>
 
+        <div class="container">
+          <div class="transparentcard center">
+            <h2>好きな写真を選んでね！</h2>       
+            <!-- ファイル選択 -->
+            <input type="file" id="fileInput" accept="image/*">
+            <img id="img">
+          </div>
 
-      <h1>Color Palette</h1>
+          <div class="card center">
+            <h2>あなたのパレット</h2>
+            
+            <div id="palette">
+              <div class="center">
+                <div class="row">
+                  <div class="color-box-me"></div>
+                  <div class="color-box-me"></div>
+                  <div class="color-box-me"></div>
+                  <div class="color-box-me"></div>
+                </div>
+                <div class="row">
+                  <div class="color-box-me"></div>
+                  <div class="color-box-me"></div>
+                  <div class="color-box-me"></div>
+                  <div class="color-box-me"></div>
+                </div>
+              </div>
+            </div>
+            
+                
+          
+            <p>決定すると相手にあなたのパレットが送られます</p>
+            <br>
+            <button id="decideBtn">決定</button>
+          </div>
 
-      <!-- ファイル選択 -->
-      <input type="file" id="fileInput" accept="image/*">
-      <img id="img">
+          <div class="card center">
+            <h2>相手のパレット</h2>
 
-      <!-- ランダムカラーボタン -->
-      <br>
-      <button id="randomBtn">ランダムカラー</button>
+            <div id="opponent">
+              <div class="center">
+                <div class="row">
+                  <div class="color-box-opponent"></div>
+                  <div class="color-box-opponent"></div>
+                  <div class="color-box-opponent"></div>
+                  <div class="color-box-opponent"></div>
+                </div>
+                <div class="row">
+                  <div class="color-box-opponent"></div>
+                  <div class="color-box-opponent"></div>
+                  <div class="color-box-opponent"></div>
+                  <div class="color-box-opponent"></div>
+                </div>
+                <h2 style="color:#ccc;top: 200px";>相手が色を選んでいます</h2>
+              </div>
+          </div>
+          </div>
+        
 
-      <br>
-      <div id="palette">
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-          <div class="color-box-me"></div>
-      </div>
-      <br>
-      <button id="decideBtn">決定</button>
+        </div>
       
-      <h2>Opponent Color</h2>
-      <div id="opponent">
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-        <div class="color-box-opponent"></div>
-      </div>
-      <h2>Selected Color</h2>
-      <div id="selected">
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-        <div class="color-box-selected"></div>
-      </div>
 
-      <div id="countDown"></div>
-      <script type="module" src="/src/main.js"></script>
+        <!-- ランダムカラーボタン -->
+            <br>
+            <button id="randomBtn">ランダムカラー</button>
+            <br>
 
+         
+      
+         
+
+       
+        
+        <h2>Selected Color</h2>
+        <div id="selected">
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+          <div class="color-box-selected"></div>
+        </div>
+
+        <div id="countDown"></div>
+        <script type="module" src="/src/main.js"></script>
+       
+      </div>
     </div>
 
 

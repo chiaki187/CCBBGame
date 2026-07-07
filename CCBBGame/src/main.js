@@ -19,6 +19,14 @@ document.querySelector("#cameraView");
 const countDown =
 document.querySelector("#countDown");
 
+const dropCountDown =
+document.querySelector("#dropCountDown");
+
+const turnPlayer =
+document.querySelector("#turnPlayer");
+
+const dropText =
+document.querySelector("#dropText");
 
 
 
@@ -113,6 +121,38 @@ connect((data)=>{
             startCountDown(isMe);
         });
     }
+
+    if(data.type === "YOUR_TURN"){
+        console.log("自分のターン");
+        turnPlayer.textContent = "あなたのターンです";
+        turnState.isMyTurn = true;
+
+        const color = myColors[Math.floor(Math.random() * myColors.length)];
+
+        send({
+            type:"PREPARE_BLOCK",
+            color:color
+        });
+    }
+    
+    if(data.type === "END_TURN"){
+        console.log("相手のターン");
+        turnPlayer.textContent = "相手のターンです";
+        turnState.isMyTurn = false;
+    }
+
+    if(data.type === "OPPONENT_DISCONNECTED"){
+        stopTurn();
+
+        turnState.started = false;
+        turnState.isMyTurn = false;
+
+        alert("相手が切断しました");
+
+        location.reload();
+
+        return;
+    }
     
     if (data.type === "RESULT_PLAYERS") {
         stopTurn();
@@ -135,7 +175,18 @@ connect((data)=>{
     //ブロックの描画
     if(data.type==="STATE"){
         updateBlocks(data.blocks);
-
+    }
+    
+    if(data.type==="DROP_COUNTDOWN"){
+        console.log("受信:", data.count);
+        updateDropCountDown(data.count);
+        if(data.count<=4){
+            dropText.style.display = "none";
+        }
+    }
+    if(data.type==="DROP"){
+        dropText.textContent = "drop!";
+        dropText.style.display = "block";
     }
 
 });
@@ -223,11 +274,26 @@ function startCountDown(isMe) {
             clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";
+            turnPlayer.textContent = isMe ? "あなたのターンです" : "相手のターンです";
             canvasSize();
-            startTurn(isMe);
+            startTurn();
+            if(isMe){
+                send({
+                    type: "START_MAIN_TURN"
+                });
+            }
         }
 
     }, 1000);
+}
+
+
+export function updateDropCountDown(count) {
+    if (count <= 0) {
+        dropCountDown.textContent = "drop!";
+        return;
+    }
+    dropCountDown.textContent = `${count}秒後にブロックが落ちます`;
 }
 
 

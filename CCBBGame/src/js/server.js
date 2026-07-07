@@ -9,53 +9,9 @@ const {
     Engine,
     Bodies,
     World,
-    Events
+    Events,
+    Body
 } = Matter;
-
-//物理演算準備
-const engine = Engine.create();
-
-const world = engine.world;
-
-// 地面
-let ground = null;
-
-const BASE_WIDTH = 1280;
-const BASE_HEIGHT = 720;
-const groundWidth = BASE_WIDTH / 3;
-const groundHeight = 10;
-const groundX = BASE_WIDTH / 2;
-const groundY = BASE_HEIGHT - groundHeight; 
-
-// 画面外のY座標(ゲームオーバーライン)
-let OUT_Y = BASE_HEIGHT + 50;
-
-ground = Bodies.rectangle(
-    groundX,
-    groundY,
-    groundWidth,
-    groundHeight,
-    {
-        isStatic: true,
-        label: "ground"
-    }
-);
-
-World.add(
-    world,
-    ground
-);
-
-
-// 物理演算開始
-setInterval(()=>{
-
-    Engine.update(
-        engine,
-        1000 / 60
-    );
-
-},1000/60);
 
 
 
@@ -93,23 +49,109 @@ const wss = new WebSocketServer({
 });
 
 
-let playerCount = 0;
-//ブロックを管理
-const gameState={
-    blocks:[]
-};
 
-// プレイヤーの情報(カラー)を保存するためのMap
-const players = new Map();
+const BASE_WIDTH = 1280;
+const BASE_HEIGHT = 720;
 
-// ゲーム終了判定
-let gameFinished = false;
+const groundWidth = BASE_WIDTH / 3;
+const groundHeight = 10;
+
+const groundX = BASE_WIDTH / 2;
+const groundY = BASE_HEIGHT - groundHeight;
+
+const blockWidth = 80;
+const blockHeight = 40;
+
+const OUT_Y = BASE_HEIGHT + 50;
+
+
+// Room管理
+const rooms = new Map();
+
+function sendToRoom(room, data) {
+
+    room.players.forEach((player, ws) => {
+
+        if (ws.readyState === 1) {
+            ws.send(
+                JSON.stringify(data)
+            );
+        }
+    });
+}
+
+function createRoom() {
+
+    const engine = Engine.create();
+    const world = engine.world;
+
+    const ground =
+        Bodies.rectangle(
+            groundX,
+            groundY,
+            groundWidth,
+            groundHeight,
+            {
+                isStatic: true,
+                label: "ground"
+            }
+        );
+
+    World.add(
+        world,
+        ground
+    );
+
+    const room = {
+        id: Math.random().toString(36).substring(2, 12),
+        players: new Map(),
+        engine,
+        world,
+        ground,
+        turnIndex: 0,
+        turnTimer: null,
+        mainTurnStarted: false,
+        gameFinished: false
+    };
+
+    // 物理演算
+    room.engineInterval =
+        setInterval(() => {
+            Engine.update(
+                room.engine,
+                1000 / 60
+            );
+        }, 1000 / 60);
+
+    setupRoomEvents(room);
+
+    return room;
+}
+
+function findAvailableRoom() {
+
+    for (const room of rooms.values()) {
+
+        if (room.players.size < 2) {
+            return room;
+        }
+    }
+    const room =
+        createRoom();
+
+    rooms.set(
+        room.id,
+        room
+    );
+
+    return room;
+}
 
 console.log("サーバ起動");
 
-function sendColorState() {
+function sendColorState(room) {
     const list = [];
-    players.forEach(p => {
+    room.players.forEach(p => {
         list.push({
             id: p.id,
             colors: p.colors,
@@ -117,304 +159,373 @@ function sendColorState() {
             decided: p.decided
         });
     });
-
-    const message = {
-        type: "COLOR_STATE",
-        players: list
-    };
-
-    console.log("COLOR_STATE送信:", list);
-
-    wss.clients.forEach(client => {
-        if (client.readyState === 1) {
-            client.send(JSON.stringify(message));
+    
+    sendToRoom(room,
+        {
+            type: "COLOR_STATE",
+            players: list
         }
-    });
+    );
 }
 
-function sendSelectedPlayer() {
+function sendSelectedPlayer(room) {
     console.log("SELECT_PLAYER送信");
-    const playerList = Array.from(players.values());
+    const playerList = Array.from(room.players.values());
 
     if (playerList.length !== 2) return;
 
     // ランダムで1人選択
     const selected = playerList[Math.floor(Math.random() * playerList.length)];
-    const message = {
-        type: "SELECT_PLAYER",
-        playerId: selected.id,
-        colors: selected.colors
-    };
-
-    wss.clients.forEach(client => {
-        if (client.readyState === 1) {
-            client.send(JSON.stringify(message));
+    
+    sendToRoom(
+        room,
+        {
+            type: "SELECT_PLAYER",
+            playerId: selected.id,
+            colors: selected.colors
         }
-    });
+    );
 }
 
 wss.on("connection", (ws) => {
+    const room = findAvailableRoom();
+    ws.roomId = room.id;
 
     console.log("接続数:", wss.clients.size);
+    console.log("接続Room:" + room.id);
 
     // 接続したプレイヤーに一意のIDを発行して通知 (INIT)
     const playerId = Math.random().toString(36).substring(2, 9);
     
     // プレイヤー情報を初期化してMapに保存
-    players.set(ws, {
+    room.players.set(ws, {
         id: playerId,
         colors: [],
         selectedColor: null,
         decided: false,
-        isMyTurn: false
+        isMyTurn: false,
+        currentBlock: null, // 現在のブロック情報
+        currentColor: null, // 現在のブロックの色
+        previewX: BASE_WIDTH / 2, // 仮ブロックの初期位置x
+        previewY: 50 // 仮ブロックの初期位置y
     });
-
 
     ws.send(JSON.stringify({
         type:"INIT",
         id:playerId
     }));
 
-
+    if(room.players.size === 2){
+        sendToRoom(
+            room,
+            {type: "START_GAME"}
+        );
+    }
 
     ws.on("message",(message)=>{
 
         const data =
         JSON.parse(message.toString());
 
+        const room = rooms.get(ws.roomId);
+        if(!room){
+            return;
+        }
 
         if(data.type==="SELECT_COLOR"){
 
-            const playerData = players.get(ws);
-
-            if(playerData){
-
-                playerData.colors=data.colors;
-                playerData.selectedColor=data.selectedColor;
-                playerData.decided=true;
-
-                players.set(ws,playerData);
-
-
-                sendColorState();
-
-
-                const decidedPlayers =
-                Array.from(players.values())
-                .filter(p=>p.decided);
-
-
-                if(decidedPlayers.length===2){
-
-                    sendSelectedPlayer();
-
-                }
-
+            const player = room.players.get(ws);
+            if(!player){
+                return;
             }
 
+            player.colors=data.colors;
+            player.selectedColor=data.selectedColor;
+            player.decided=true;
+
+            sendColorState(room);
+
+            const decidedPlayers = 
+            Array.from(room.players.values()).filter(p=>p.decided);
+
+            if(decidedPlayers.length===2){
+                sendSelectedPlayer(room);
+            }
+        }
+
+        else if(data.type === "START_MAIN_TURN") {
+            if (room.mainTurnStarted) {
+                return;
+            }
+            room.mainTurnStarted = true;
+            console.log("ターン開始 Room:" + room.id);
+
+            startMainTurn(room);
         }
 
         if(data.type === "TURN_UPDATE"){
-
-            const player = players.get(ws);
-
+            const player = room.players.get(ws);
             if(player){
-
                 player.isMyTurn = data.isMyTurn;
             }
         }
 
+        else if(data.type === "PREPARE_BLOCK"){
+            const player = room.players.get(ws);
 
-        else if(data.type==="SPAWN_BLOCK"){
-            const block =
-            Bodies.rectangle(
-                data.x,
-                data.y,
-                40,
-                20,
-                {
-                    label:"block",
-                    render:{
-                        fillStyle:data.color
-                    }
-                }
-            );
+            if(!player){
+                return;
+            }
+            // 生成するブロックカラー記憶
+            player.currentColor = data.color;
 
+            // 仮ブロック初期位置
+            player.previewX = BASE_WIDTH / 2;
+            player.previewY = 50;
+        }
 
-            World.add(
-                world,
-                block
-            );
+        else if(data.type === "MOVE_BLOCK"){ // ブロックの位置移動(x座標のみ)
+            const player = room.players.get(ws);
+            
+            if(!player){
+                return;
+            }
 
+            if(!player.isMyTurn){
+                return;
+            }
+            // ブロック位置決め（x軸方向）
+            player.previewX = data.x;
         }
 
         // クライアントへ返す通信
-        if(data.type !== "SPAWN_BLOCK"){
-
-            wss.clients.forEach(client=>{
-
-                if(client.readyState===1){
-
-                    client.send(
-                        JSON.stringify(data)
-                    );
-
-                }
-
-            });
-
+        if(data.type !== "SPAWN_BLOCK" && data.type!="MOVE_BLOCK"){
+            sendToRoom(room, data);
         }
     });
 
-
-
-    if(wss.clients.size===2){
-
-        wss.clients.forEach(client=>{
-
-            if(client.readyState===1){
-
-                client.send(JSON.stringify({
-                    type:"START_GAME"
-                }));
-
-            }
-
-        });
-
-    }
-
-
-
     ws.on("close",()=>{
-
-        console.log("切断");
+        const room = rooms.get(ws.roomId);
+        if(!room){
+            return;
+        }
+        console.log("切断 Room:" + room.id);
 
         // 切断されたプレイヤーを削除
-        players.delete(ws);
-        
-        const blocks = world.bodies.filter(
-            body => body.label === "block"
-        );
+        room.players.delete(ws);
 
-        // ブロックを削除
-        blocks.forEach(block => {
-            World.remove(world, block);
-        });
-
-        gameFinished = false;
-
-        // 全プレイヤーの結果を削除
-        players.forEach(player => {
-            player.isMyTurn = false;
-        });
-
-        // 状態を全員に再送
-        sendColorState();
-
+        sendToRoom(
+            room,
+            {
+                type: "OPPONENT_DISCONNECTED"
+            }
+        )
+        clearInterval(room.turnTimer);
+        clearInterval(room.engineInterval);
+        rooms.delete(room.id);
     });
-
-
 });
 
-Events.on(engine, "afterUpdate", ()=>{
+// イベント関数（room別）
+function setupRoomEvents(room) {
+    Events.on(room.engine, "afterUpdate", ()=>{
 
-    if(gameFinished){
+        if(room.gameFinished){
+            return;
+        }
+
+        for(const body of room.world.bodies){
+            if(body.label !== "block"){
+                continue;
+            }
+
+            if(body.position.y > OUT_Y){
+                room.gameFinished = true;
+                console.log("Game Over", room.id);
+                const resultPlayers = [];
+                
+                room.players.forEach(player => {
+                    resultPlayers.push({
+                        id: player.id,
+                        result: !player.isMyTurn ? "LOSE" : "WIN"
+                    });
+                });
+                
+                sendToRoom(
+                    room,
+                    {
+                        type: "RESULT_PLAYERS",
+                        players:
+                            resultPlayers
+                    }
+                );
+                break;
+            }
+        }
+    });
+
+    Events.on(room.engine, "collisionStart", event=>{
+        event.pairs.forEach( pair=>{
+            const hitGround = pair.bodyA.label === "ground" ||
+                                pair.bodyB.label === "ground";
+            
+            if(hitGround){
+                console.log("Room " + room.id + ":Ground接触");
+            }
+        });
+    });
+}
+
+function startMainTurn(room) {
+    if(room.gameFinished){
         return;
     }
 
-    for(const body of world.bodies){
-        if(body.label !== "block"){
-            continue;
-        }
+    const playerSockets = Array.from(room.players.keys());
 
-        if(body.position.y > OUT_Y){
-            gameFinished = true;
-            console.log("Game Over");
-            const resultPlayers = [];
-            
-            players.forEach(player => {
-                resultPlayers.push({
-                    id: player.id,
-                    result: player.isMyTurn ? "LOSE" : "WIN"
-                });
-            });
-
-            wss.clients.forEach(client =>{
-                if(client.readyState === 1){
-                    client.send(
-                        JSON.stringify({
-                            type: "RESULT_PLAYERS",
-                            players: resultPlayers
-                        })
-                    );
-                }
-            });
-            break;
-        }
+    if (playerSockets.length < 2) {
+        return;
     }
-});
 
-Events.on(engine, "collisionStart", event=>{
-    event.pairs.forEach( pair=>{
-        const hitGround = pair.bodyA.label === "ground" ||
-                            pair.bodyB.label === "ground";
-        
-        if(hitGround){
-            console.log("Ground接触");
+    const currentWs = playerSockets[room.turnIndex];
+    const currentPlayer = room.players.get(currentWs);
+
+    if(!currentPlayer){
+        return;
+    }
+
+    currentPlayer.isMyTurn = true;
+
+    currentWs.send(JSON.stringify({
+        type: "YOUR_TURN"
+    }));
+
+    console.log("ターン開始:", currentPlayer.id);
+
+    // カウントダウン開始
+    let count = 5;
+
+    sendToRoom(
+        room,
+        {
+            type: "DROP_COUNTDOWN",
+            count
         }
-    });
-});
+    )
 
+    room.turnTimer = setInterval(() => {
+        if(room.gameFinished){
+            clearInterval(room.turnTimer);
+            return;
+        }
+        count--;
+
+        sendToRoom(
+            room,
+            {
+                type: "DROP_COUNTDOWN",
+                count
+            }
+        )
+
+        if (count > 0) {
+            return;
+        }
+
+        clearInterval(room.turnTimer);
+
+        // ブロック落下時のテキスト反映
+        sendToRoom(
+            room,
+            {
+                type: "DROP"
+            }
+        )
+
+        // ブロックを生成して落下させる
+        const color = currentPlayer.currentColor;
+        if (color) {
+
+            const realBlock =
+                Bodies.rectangle(
+                    currentPlayer.previewX,
+                    currentPlayer.previewY,
+                    blockWidth,
+                    blockHeight,
+                    {
+                        label: "block",
+                        restitution: 0,
+                        friction: 0.8,
+                        frictionStatic: 1,
+                        render: {
+                            fillStyle: color
+                        }
+                    }
+                );
+
+            World.add(room.world, realBlock);
+        }
+
+        currentPlayer.isMyTurn = false;
+
+        currentWs.send(JSON.stringify({
+            type: "END_TURN"
+        }));
+
+        room.turnIndex = (room.turnIndex + 1) % playerSockets.length;
+
+        // ターン（ゲーム）開始
+        startMainTurn(room);
+
+    }, 1000);
+
+}
 
 setInterval(()=>{
 
+    rooms.forEach(room => {
 
-    const blocks =
-    world.bodies.filter(
-        body=>body.label==="block"
-    );
+        const blockStates =
+        room.world.bodies
+        .filter(
+            body=>body.label==="block"
+        )
+        .map(
+            block=>({
+                id:block.id,
+                x:block.position.x,
+                y:block.position.y,
+                angle:block.angle,
+                color:block.render.fillStyle,
+                label:block.label
+            })
+        );
 
+        // 仮ブロック
+        room.players.forEach(player => {
+            if(
+                player.isMyTurn &&
+                player.currentColor
+            ){
+                blockStates.push({
+                    id:"preview",
+                    x:player.previewX,
+                    y:player.previewY,
+                    angle:0,
+                    color:player.currentColor,
+                    label:"preview"
+                });
+            }
+        });
 
-
-    const state={
-
-        type:"STATE",
-
-        blocks:
-        blocks.map(block=>({
-
-            id:block.id,
-
-            x:block.position.x,
-
-            y:block.position.y,
-
-            angle:block.angle,
-
-            color:block.render.fillStyle
-
-        }))
-
-    };
-
-
-
-    wss.clients.forEach(client=>{
-
-
-        if(client.readyState===1){
-
-            client.send(
-                JSON.stringify(state)
-            );
-
-        }
-
-
+        sendToRoom(
+            room,
+            {
+                type: "STATE",
+                blocks: blockStates
+            }
+        );
     });
-
-
 },50);
 
 

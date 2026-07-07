@@ -1,5 +1,8 @@
 import { connect,send } from "./js/websocket.js";
+import { startTurn, stopTurn, turnState } from "./js/time.js";
+import { playRoulette } from "./js/roulette.js";
 import { updateBlocks } from "./js/blocks.js";
+import { canvasSize } from "./js/blocks.js";
 
 //それぞれの画面取得
 const firstView =
@@ -8,13 +11,13 @@ document.querySelector("#firstView");
 const startgameView =
 document.querySelector("#startgameView");
 
+const finishgameView =
+document.getElementById("finishgameView");
 const cameraView =
 document.querySelector("#cameraView");
 
 const countDown =
 document.querySelector("#countDown");
-
-
 
 
 
@@ -45,6 +48,9 @@ let selectedColor = null;
 let myColorDecided = false;
 let myColors = [];
 let myId = null;
+
+// ゲーム終了結果画面
+const resultText = document.getElementById("resultText");
 
 
 
@@ -99,39 +105,40 @@ connect((data)=>{
     }
 
     if (data.type === "SELECT_PLAYER") {
-        console.log(data.colors);
-        console.log("SELECT");
         const isMe = data.playerId === myId;
-        showSelectedPalette(boxes_selected, data.colors, isMe);
 
-        //色が決定したら　5秒後　カメラ画面表示
-        //カメラ起動は時間がかかるので先に起動を開始
-
-    setUpgameView();
-    let count=5;
-    const timer = setInterval(()=>{
-        countDown.textContent=`${count}秒後にゲーム開始です`;
-
-        if(count<=-1){
-            clearInterval(timer);
-            startgameView.style.display = "none";
-            cameraView.style.display = "block";
-            }
-            count--;
-        }, 1000);
-
+        // カラールーレット開始
+        playRoulette(isMe, () => {
+            showSelectedPalette(boxes_selected, data.colors, isMe);
+            startCountDown(isMe);
+        });
     }
+    
+    if (data.type === "RESULT_PLAYERS") {
+        stopTurn();
+        console.log("RESULT:", data);
+        const me = data.players.find(p => p.id === myId);
+
+        turnState.started = false;
+        turnState.isMyTurn = false;
+
+        finishgameView.style.display = "flex";
+
+        if (me.result === "WIN") {
+            resultText.textContent = "あなたの勝ち！";
+        } else {
+            resultText.textContent = "あなたの負け！";
+        }
+    }
+
 
     //ブロックの描画
     if(data.type==="STATE"){
-        console.log("data.blocks:"+data.blocks.x);
         updateBlocks(data.blocks);
 
     }
 
 });
-
-
 
 
 
@@ -192,7 +199,36 @@ decideBtn.addEventListener("click", () => {
     showWaiting(myColorDecided);
 });
 
+// 結果画面閉じるボタン
+document.getElementById("closeResult").addEventListener("click", () => {
+    finishgameView.style.display = "none";
+});
 
+
+// ゲーム開始カウントダウン
+function startCountDown(isMe) {
+
+    // カメラは先に起動
+    setUpgameView();
+
+    let count = 5;
+    countDown.textContent = `${count}秒後にゲーム開始です`;
+
+    const timer = setInterval(() => {
+
+        count--;
+        countDown.textContent = `${count}秒後にゲーム開始です`;
+
+        if (count <= 0) {
+            clearInterval(timer);
+            startgameView.style.display = "none";
+            cameraView.style.display = "block";
+            canvasSize();
+            startTurn(isMe);
+        }
+
+    }, 1000);
+}
 
 
 //カメラ画面

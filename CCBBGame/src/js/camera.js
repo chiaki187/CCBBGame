@@ -2,6 +2,7 @@ import {
   GestureRecognizer,
   FilesetResolver,
 } from "@mediapipe/tasks-vision";
+import { turnState } from "./time.js";
 import { connect,send } from "./websocket.js";
 
 const res = await fetch("/gesture_recognizer.task");
@@ -139,6 +140,12 @@ function drawHand(ctx, hand, w, h){
   ctx.stroke();
 }
 
+const octx =
+    overlay.getContext("2d");
+
+// 仮--------　ブロック生成時間管理
+let lastBlockTime = 0;
+let lastDetectTime = 0;
 
 function drawFrame(camera, overlay, canvas){
 
@@ -146,9 +153,25 @@ function drawFrame(camera, overlay, canvas){
     ()=>drawFrame(camera,overlay,canvas)
   );
 
+  // const octx =
+  //   overlay.getContext("2d");
+
+  // 開始前 or 相手ターン　描画停止
+  if (!turnState.started || !turnState.isMyTurn) {
+    octx.clearRect(0, 0, overlay.width, overlay.height);
+
+    fingerState.x = null;
+    fingerState.y = null;
+    fingerState.isPointing = false;
+
+    return;
+  }
 
   const now = performance.now();
 
+  // 処理を軽くするため
+  if (now - lastDetectTime < 100) return;
+    lastDetectTime = now;
 
   const result =
     handGesture.recognizeForVideo(
@@ -163,10 +186,6 @@ function drawFrame(camera, overlay, canvas){
 
   const gestures =
     result.gestures;
-
-
-  const octx =
-    overlay.getContext("2d");
 
 
   octx.clearRect(
@@ -222,17 +241,28 @@ function drawFrame(camera, overlay, canvas){
     octx.fillStyle = "red";
     octx.fill();
 
+  // 仮--------
+//   if (now - lastBlockTime > 500) { // 0.5秒間隔でブロック生成
+//     addBlock(fingerState.x - 250, fingerState.y);
+//     lastBlockTime = now;
+//   }
+  // ----------
+  // addBlock(fingerState.x-250, fingerState.y);
 
-    let now =performance.now();
+    // let now =performance.now();
     if(now-lastTime>3000){
       const thisColor=colors[Math.floor(Math.random() * 8)];
+
+      
+      const worldX = (fingerState.x / overlay.width) * 1280;
+      const worldY = (fingerState.y / overlay.height) * 720;
 
 
       //ブロックの情報を通信
       const blockInfo={
         type:"SPAWN_BLOCK",
-        x:fingerState.x-250,
-        y:fingerState.y,
+        x:worldX,
+        y:worldY,
         color:thisColor
       }
       send(blockInfo);

@@ -8,7 +8,8 @@ import Matter from "matter-js";
 const {
     Engine,
     Bodies,
-    World
+    World,
+    Events
 } = Matter;
 
 //物理演算準備
@@ -16,19 +17,29 @@ const engine = Engine.create();
 
 const world = engine.world;
 
-
 // 地面
-const ground =
-Bodies.rectangle(
-    320,
-    550,
-    900,
-    10,
+let ground = null;
+
+const BASE_WIDTH = 1280;
+const BASE_HEIGHT = 720;
+const groundWidth = BASE_WIDTH / 3;
+const groundHeight = 10;
+const groundX = BASE_WIDTH / 2;
+const groundY = BASE_HEIGHT - groundHeight; 
+
+// 画面外のY座標(ゲームオーバーライン)
+let OUT_Y = BASE_HEIGHT + 50;
+
+ground = Bodies.rectangle(
+    groundX,
+    groundY,
+    groundWidth,
+    groundHeight,
     {
-        isStatic:true
+        isStatic: true,
+        label: "ground"
     }
 );
-
 
 World.add(
     world,
@@ -45,7 +56,6 @@ setInterval(()=>{
     );
 
 },1000/60);
-
 
 
 
@@ -92,6 +102,9 @@ const gameState={
 // プレイヤーの情報(カラー)を保存するためのMap
 const players = new Map();
 
+// ゲーム終了判定
+let gameFinished = false;
+
 console.log("サーバ起動");
 
 function sendColorState() {
@@ -127,7 +140,6 @@ function sendSelectedPlayer() {
 
     // ランダムで1人選択
     const selected = playerList[Math.floor(Math.random() * playerList.length)];
-    console.log("型:", typeof selected.colors);
     const message = {
         type: "SELECT_PLAYER",
         playerId: selected.id,
@@ -145,16 +157,16 @@ wss.on("connection", (ws) => {
 
     console.log("接続数:", wss.clients.size);
 
-
-    const playerId =
-    Math.random().toString(36).substring(2,9);
-
-
-    players.set(ws,{
-        id:playerId,
-        colors:[],
-        selectedColor:null,
-        decided:false
+    // 接続したプレイヤーに一意のIDを発行して通知 (INIT)
+    const playerId = Math.random().toString(36).substring(2, 9);
+    
+    // プレイヤー情報を初期化してMapに保存
+    players.set(ws, {
+        id: playerId,
+        colors: [],
+        selectedColor: null,
+        decided: false,
+        isMyTurn: false
     });
 
 
@@ -165,15 +177,10 @@ wss.on("connection", (ws) => {
 
 
 
-    // ★ここに置く
     ws.on("message",(message)=>{
 
         const data =
         JSON.parse(message.toString());
-
-
-        console.log(data.type);
-
 
 
         if(data.type==="SELECT_COLOR"){
@@ -207,6 +214,15 @@ wss.on("connection", (ws) => {
 
         }
 
+        if(data.type === "TURN_UPDATE"){
+
+            const player = players.get(ws);
+
+            if(player){
+
+                player.isMyTurn = data.isMyTurn;
+            }
+        }
 
 
         else if(data.type==="SPAWN_BLOCK"){
@@ -274,15 +290,80 @@ wss.on("connection", (ws) => {
 
         console.log("切断");
 
-
+        // 切断されたプレイヤーを削除
         players.delete(ws);
+        
+        const blocks = world.bodies.filter(
+            body => body.label === "block"
+        );
 
+        // ブロックを削除
+        blocks.forEach(block => {
+            World.remove(world, block);
+        });
 
+        gameFinished = false;
+
+        // 全プレイヤーの結果を削除
+        players.forEach(player => {
+            player.isMyTurn = false;
+        });
+
+        // 状態を全員に再送
         sendColorState();
 
     });
 
 
+});
+
+Events.on(engine, "afterUpdate", ()=>{
+
+    if(gameFinished){
+        return;
+    }
+
+    for(const body of world.bodies){
+        if(body.label !== "block"){
+            continue;
+        }
+
+        if(body.position.y > OUT_Y){
+            gameFinished = true;
+            console.log("Game Over");
+            const resultPlayers = [];
+            
+            players.forEach(player => {
+                resultPlayers.push({
+                    id: player.id,
+                    result: player.isMyTurn ? "LOSE" : "WIN"
+                });
+            });
+
+            wss.clients.forEach(client =>{
+                if(client.readyState === 1){
+                    client.send(
+                        JSON.stringify({
+                            type: "RESULT_PLAYERS",
+                            players: resultPlayers
+                        })
+                    );
+                }
+            });
+            break;
+        }
+    }
+});
+
+Events.on(engine, "collisionStart", event=>{
+    event.pairs.forEach( pair=>{
+        const hitGround = pair.bodyA.label === "ground" ||
+                            pair.bodyB.label === "ground";
+        
+        if(hitGround){
+            console.log("Ground接触");
+        }
+    });
 });
 
 

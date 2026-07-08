@@ -19,6 +19,12 @@ document.querySelector("#cameraView");
 const countDown =
 document.querySelector("#countDown");
 
+const whoSelectedText =
+document.getElementById("whoSelectedText");
+
+const colorSystemExplainText =
+document.getElementById("colorSystemExplainText");
+
 
 
 
@@ -107,10 +113,18 @@ connect((data)=>{
     if (data.type === "SELECT_PLAYER") {
         const isMe = data.playerId === myId;
 
+        colorSystemExplainText.style.display = "none";
         // カラールーレット開始
         playRoulette(isMe, () => {
             showSelectedPalette(boxes_selected, data.colors, isMe);
             startCountDown(isMe);
+
+            if(isMe){
+                whoSelectedText.textContent="あなたの色が選択されました！";
+            }else{
+                whoSelectedText.textContent="あいての色が選択されました！";
+            }
+            
         });
     }
     
@@ -212,12 +226,20 @@ function startCountDown(isMe) {
     setUpgameView();
 
     let count = 5;
-    countDown.textContent = `${count}秒後にゲーム開始です`;
-
+    countDown.innerHTML = `ゲーム開始まで<span class="count-number" style="color:#FA8B8A;">${count}</span>秒！`;
     const timer = setInterval(() => {
 
         count--;
-        countDown.textContent = `${count}秒後にゲーム開始です`;
+    
+        if(count==1){
+            countDown.innerHTML = `ゲーム開始まで<span class="count-number" style="color:#FA8B8A;">${count}</span>秒！`;
+        }else if(count==2){
+            countDown.innerHTML = `ゲーム開始まで<span class="count-number" style="color:#FACA57">${count}</span>秒！`;
+        }else if(count==3){
+            countDown.innerHTML = `ゲーム開始まで<span class="count-number"style="color:#68D4CB">${count}</span>秒！`;
+        }else if(count==4){
+            countDown.innerHTML = `ゲーム開始まで<span class="count-number" style="color:#AB99E0;">${count}</span>秒！`;
+        }
 
         if (count <= 0) {
             clearInterval(timer);

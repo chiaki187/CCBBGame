@@ -145,26 +145,31 @@
         </div>
        
          
-        <div class="bigtext">写真から色を検出して</div>
-        <div class="bigtext" >積み木の色を
+        <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
+        <div id="countDown" class="bigtext" >積み木の色を
           <span style="color:#FA8B8A;">カ</span>
           <span style="color:#FACA57;">ス</span>
           <span style="color:#68D4CB;">タ</span>
           <span style="color:#AB99E0;">ム</span>
           しよう！</div>
-
+          <img id="img">
         <div class="container">
-          <div class="transparentcard center">
+
+          <!--色選択の説明-->
+          <div id="colorSystemExplainText" class="transparentcard center">
             <h2>好きな写真を選んでね！</h2>       
             <!-- ファイル選択 -->
             <input type="file" id="fileInput" accept="image/*">
-            <img id="img">
+            <!-- ランダムカラーボタン -->
+            <br>
+            <button id="randomBtn">ランダムカラー</button>
+            <br>
           </div>
 
-          <div class="card center">
+          <div id="palette" class="card center player-panel">
             <h2>あなたのパレット</h2>
             
-            <div id="palette">
+            <div >
               <div class="center">
                 <div class="row">
                   <div class="color-box-me"></div>
@@ -188,10 +193,10 @@
             <button id="decideBtn">決定</button>
           </div>
 
-          <div class="card center">
+          <div id="opponent" class="card center player-panel">
             <h2>相手のパレット</h2>
 
-            <div id="opponent">
+            <div >
               <div class="center">
                 <div class="row">
                   <div class="color-box-opponent"></div>
@@ -214,16 +219,9 @@
         </div>
       
 
-        <!-- ランダムカラーボタン -->
-            <br>
-            <button id="randomBtn">ランダムカラー</button>
-            <br>
+    
 
-         
-      
-         
-
-       
+            
         
         <h2>Selected Color</h2>
         <div id="selected">
@@ -237,7 +235,7 @@
           <div class="color-box-selected"></div>
         </div>
 
-        <div id="countDown"></div>
+        
         <script type="module" src="/src/main.js"></script>
        
       </div>

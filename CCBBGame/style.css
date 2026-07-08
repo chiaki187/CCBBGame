@@ -104,3 +104,8 @@ button{
   border-radius: 12px;
   padding: 20px;
 }
+
+.count-number{
+  font-size: 45px;
+  font-weight: bold;
+}

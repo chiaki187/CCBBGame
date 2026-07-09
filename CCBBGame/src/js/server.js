@@ -357,32 +357,25 @@ wss.on("connection", (ws) => {
 });
 
 function getTowerHeight(room) {
+    // 落下済みブロック
+    const settledBlocks = room.world.bodies
+                            .filter(body =>
+                                body.label === "block" &&
+                                body.isSettled === true
+                            );
 
-    const blocks = room.world.bodies.filter(
-        body => body.label === "block"
-    );
-
-    if (blocks.length === 0) {
+    if (settledBlocks.length === 0) {
         return 0;
     }
-
-    // 全ブロックの全頂点のうち最も上(Yが最小)を取得
-    const highestY = Math.min(
-        ...blocks.flatMap(
-            block => block.vertices.map(
-                vertex => vertex.y
-            )
-        )
-    );
-
-    // 地面から最高到達点までの高さ
+    // 落下済みブロックの高さ
+    const highestY = Math.min(...settledBlocks.flatMap(block => block.vertices.map(v => v.y)));
+    // 地面から落下済みブロックまでの高さ
     return groundY - highestY;
 }
 
 // イベント関数（room別）
 function setupRoomEvents(room) {
     Events.on(room.engine, "afterUpdate", ()=>{
-
         if(room.gameFinished){
             return;
         }
@@ -420,13 +413,33 @@ function setupRoomEvents(room) {
         }
     });
 
-    Events.on(room.engine, "collisionStart", event=>{
-        event.pairs.forEach( pair=>{
-            const hitGround = pair.bodyA.label === "ground" ||
-                                pair.bodyB.label === "ground";
-            
-            if(hitGround){
-                console.log("Room " + room.id + ":Ground接触");
+    Events.on(room.engine, "collisionStart", event => {
+        event.pairs.forEach(pair => {
+            const a = pair.bodyA;
+            const b = pair.bodyB;
+
+            // 接触したらtrue
+            const blockToGround =
+                a.label === "block" &&
+                b.label === "ground";
+
+            const groundToBlock =
+                a.label === "ground" &&
+                b.label === "block";
+                
+            const blockToBlock =
+                a.label === "block" &&
+                b.label === "block";
+
+            if (blockToGround) {
+                a.isSettled = true;
+            }
+            if (groundToBlock) {
+                b.isSettled = true;
+            }
+            if (blockToBlock) {
+                a.isSettled = true;
+                b.isSettled = true;
             }
         });
     });
@@ -518,6 +531,9 @@ function startMainTurn(room) {
                         }
                     }
                 );
+
+            // 地面や他のブロックに接触したかの有無（空中ならfalse）
+            realBlock.isSettled = false;
 
             World.add(room.world, realBlock);
         }

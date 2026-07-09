@@ -19,11 +19,13 @@ document.querySelector("#cameraView");
 const countDown =
 document.querySelector("#countDown");
 
+
 const whoSelectedText =
 document.getElementById("whoSelectedText");
 
 const colorSystemExplainText =
 document.getElementById("colorSystemExplainText");
+
 
 const dropCountDown =
 document.querySelector("#dropCountDown");
@@ -33,6 +35,14 @@ document.querySelector("#turnPlayer");
 
 const dropText =
 document.querySelector("#dropText");
+
+const whoSelectedText =
+document.getElementById("whoSelectedText");
+
+const colorSystemExplainText =
+document.getElementById("colorSystemExplainText");
+
+
 
 
 

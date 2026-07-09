@@ -87,10 +87,7 @@ export async function setupCamera(color){
 
   const stream =
     await navigator.mediaDevices.getUserMedia({
-      video:{
-        width:640,
-        height:360
-      },
+      video:{      },
       audio:false
     });
 

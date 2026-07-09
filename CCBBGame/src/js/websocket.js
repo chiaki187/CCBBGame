@@ -25,6 +25,11 @@ export function connect(callback) {
     socket.onerror = (error) => {
         console.error("WebSocketエラー:", error);
     };
+    
+    socket.onclose = () => {
+        console.log("WebSocket切断");
+    };
+
 }
 
 

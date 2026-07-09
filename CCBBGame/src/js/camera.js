@@ -23,6 +23,19 @@ let prevY = null; // ← 追加
 let colors=[];
 
 
+export function createTurnBlock(){
+  console.log("createTurnBlock実行");
+  const thisColor =colors[Math.floor(Math.random() * colors.length)];
+
+  send({
+    type:"PREPARE_BLOCK",
+    x:640,
+    color:thisColor
+  });
+
+}
+
+
 async function initDetector() {
 
   const vision =
@@ -238,35 +251,13 @@ function drawFrame(camera, overlay, canvas){
     octx.fillStyle = "red";
     octx.fill();
 
-  // 仮--------
-//   if (now - lastBlockTime > 500) { // 0.5秒間隔でブロック生成
-//     addBlock(fingerState.x - 250, fingerState.y);
-//     lastBlockTime = now;
-//   }
-  // ----------
-  // addBlock(fingerState.x-250, fingerState.y);
-
-    // let now =performance.now();
-    if(now-lastTime>3000){
-      const thisColor=colors[Math.floor(Math.random() * 8)];
-
-      
-      const worldX = (fingerState.x / overlay.width) * 1280;
-      const worldY = (fingerState.y / overlay.height) * 720;
-
-
-      //ブロックの情報を通信
-      const blockInfo={
-        type:"SPAWN_BLOCK",
-        x:worldX,
-        y:worldY,
-        color:thisColor
-      }
-      send(blockInfo);
-
-      lastTime = now;
+    const worldX = (fingerState.x / overlay.width) * 1280;
+    if (turnState.isMyTurn && Number.isFinite(fingerState.x)) {
+        send({
+            type: "MOVE_BLOCK",
+            x: worldX
+        });
     }
-   
 
 
   }else{

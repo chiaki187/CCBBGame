@@ -13,18 +13,12 @@ document.querySelector("#startgameView");
 
 const finishgameView =
 document.getElementById("finishgameView");
+
 const cameraView =
 document.querySelector("#cameraView");
 
 const countDown =
 document.querySelector("#countDown");
-
-
-const whoSelectedText =
-document.getElementById("whoSelectedText");
-
-const colorSystemExplainText =
-document.getElementById("colorSystemExplainText");
 
 
 const dropCountDown =

@@ -58,7 +58,11 @@ let myColors = [];
 let myId = null;
 
 // ゲーム終了結果画面
-const resultText = document.getElementById("resultText");
+const resultText = 
+document.getElementById("resultText");
+
+const towerHeightText = 
+document.getElementById("towerHeightText");
 
 
 
@@ -142,6 +146,7 @@ connect((data)=>{
     }
 
     if(data.type === "OPPONENT_DISCONNECTED"){
+        console.log("相手が切断しました");
         stopTurn();
 
         turnState.started = false;
@@ -164,10 +169,14 @@ connect((data)=>{
 
         finishgameView.style.display = "flex";
 
+        const towerHeight = Math.round(data.towerHeight);
+
         if (me.result === "WIN") {
             resultText.textContent = "あなたの勝ち！";
+            towerHeightText.textContent = `高さ ${towerHeight} px`;
         } else {
             resultText.textContent = "あなたの負け！";
+            towerHeightText.textContent = `高さ ${towerHeight} px`;
         }
     }
 

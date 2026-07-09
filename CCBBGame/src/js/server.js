@@ -105,6 +105,7 @@ function createRoom() {
     const room = {
         id: Math.random().toString(36).substring(2, 12),
         players: new Map(),
+        noEntry: false,
         engine,
         world,
         ground,
@@ -129,15 +130,17 @@ function createRoom() {
 }
 
 function findAvailableRoom() {
-
     for (const room of rooms.values()) {
+        console.log("NG:",room.noEntry);
+        if (room.noEntry) {
+            continue;
+        }
 
         if (room.players.size < 2) {
             return room;
         }
     }
-    const room =
-        createRoom();
+    const room = createRoom();
 
     rooms.set(
         room.id,
@@ -309,22 +312,72 @@ wss.on("connection", (ws) => {
         if(!room){
             return;
         }
-        console.log("切断 Room:" + room.id);
+        room.noEntry = true;
 
         // 切断されたプレイヤーを削除
         room.players.delete(ws);
-
-        sendToRoom(
-            room,
-            {
-                type: "OPPONENT_DISCONNECTED"
+        
+        // 残っているプレイヤーだけに送信
+        room.players.forEach((player, otherWs) => {
+            if (otherWs.readyState === 1) {
+                otherWs.send(JSON.stringify({
+                    type: "OPPONENT_DISCONNECTED"
+                }));
             }
-        )
-        clearInterval(room.turnTimer);
-        clearInterval(room.engineInterval);
-        rooms.delete(room.id);
+        });
+        
+        // room.players.forEach((player, otherWs) => {
+        //     if (otherWs !== ws && otherWs.readyState === 1) {
+        //         otherWs.send(JSON.stringify({
+        //             type: "OPPONENT_DISCONNECTED"
+        //         }));
+        //     }
+        // });
+        
+        // room.players.clear();
+
+        // clearInterval(room.turnTimer);
+        // clearInterval(room.engineInterval);
+        // rooms.delete(room.id);
+        
+        // if (room.players.size === 0) {
+        //     clearInterval(room.turnTimer);
+        //     clearInterval(room.engineInterval);
+        //     rooms.delete(room.id);
+        // }
+        
+        // setTimeout(() => {
+        //         clearInterval(room.turnTimer);
+        //         clearInterval(room.engineInterval);
+        //         rooms.delete(room.id);
+        // }, 500);
+
+
     });
 });
+
+function getTowerHeight(room) {
+
+    const blocks = room.world.bodies.filter(
+        body => body.label === "block"
+    );
+
+    if (blocks.length === 0) {
+        return 0;
+    }
+
+    // 全ブロックの全頂点のうち最も上(Yが最小)を取得
+    const highestY = Math.min(
+        ...blocks.flatMap(
+            block => block.vertices.map(
+                vertex => vertex.y
+            )
+        )
+    );
+
+    // 地面から最高到達点までの高さ
+    return groundY - highestY;
+}
 
 // イベント関数（room別）
 function setupRoomEvents(room) {
@@ -341,7 +394,10 @@ function setupRoomEvents(room) {
 
             if(body.position.y > OUT_Y){
                 room.gameFinished = true;
-                console.log("Game Over", room.id);
+                const towerHeight = getTowerHeight(room);
+                room.finalHeight = towerHeight;
+
+                console.log("Game Over", room.id, ", Height:", towerHeight);
                 const resultPlayers = [];
                 
                 room.players.forEach(player => {
@@ -355,8 +411,8 @@ function setupRoomEvents(room) {
                     room,
                     {
                         type: "RESULT_PLAYERS",
-                        players:
-                            resultPlayers
+                        players: resultPlayers,
+                        towerHeight: towerHeight
                     }
                 );
                 break;

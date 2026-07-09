@@ -160,6 +160,10 @@ function updateColorsFromBoxes() {
     myColors = Array.from(boxes_me).map(box => box.textContent);
 }
 
+//画像データ保存用変数
+    let myImage = null;
+
+
 // ファイル（画像）選択したときの処理
 fileInput.addEventListener("change", (event) => {
     const file = event.target.files[0];
@@ -167,6 +171,14 @@ fileInput.addEventListener("change", (event) => {
 
     const imageUrl = URL.createObjectURL(file);
     img.src = imageUrl;
+
+    //画像データ保存用
+    const reader = new FileReader();
+    reader.onload = () => {
+        myImage = reader.result;   // Base64文字列
+    };
+    reader.readAsDataURL(file);
+
 
     img.onload = function () {
         generatePalette(img, boxes_me, colorThief);
@@ -201,13 +213,14 @@ boxes_me.forEach(box => {
 decideBtn.addEventListener("click", () => {
 
     if (!selectedColor || myColorDecided) return;
-
+    decideBtn.style.background="#cccccc";
     myColorDecided = true;
     send({
         id: myId,
         type: "SELECT_COLOR",
         selectedColor: selectedColor,
-        colors: myColors
+        colors: myColors,
+        image: myImage
     });
 
     showWaiting(myColorDecided);

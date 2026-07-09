@@ -109,3 +109,26 @@ button{
   font-size: 45px;
   font-weight: bold;
 }
+
+.game-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.cameraCard {
+  width: 80%;
+  padding: 10px;
+
+
+}
+.cameraMiniCard{
+
+  align-items: center;
+  background: rgb(255, 255, 255);
+  border-radius: 12px;
+  padding: 20px;
+  gap: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}

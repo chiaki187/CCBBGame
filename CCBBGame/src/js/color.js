@@ -1,5 +1,9 @@
 const opponentDiv = document.getElementById("opponent");
 const selectedDiv = document.getElementById("selected");
+const paletteDiv = document.getElementById("palette");
+const myPaletteDiv = document.getElementById("myPalette");
+
+
 
 // 画像からパレット生成
 export function generatePalette(img, boxes, colorThief) {
@@ -51,14 +55,10 @@ export function showSelectedPalette(boxes, colors, isMe) {
     const selectedText = document.getElementById("selectedPlayer");
     if (selectedText) selectedText.remove();
 
-    // タイトル
-    const text = document.createElement("p");
-    text.id = "selectedPlayer"
-    text.textContent = isMe 
-        ? "あなたが選ばれました" 
-        : "相手が選ばれました";
-
-    selectedDiv.appendChild(text);
+    
+    selectedDiv.style.display="block";
+    myPaletteDiv.style.display="none";
+    
 
     // カラーボックス
     colors.forEach((color, i) => {

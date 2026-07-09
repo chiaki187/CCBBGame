@@ -19,7 +19,7 @@ const BASE_HEIGHT = 720;
 const canvasWidth = BASE_WIDTH / 3;
 const canvasHeight = 10;
 const canvasX = BASE_WIDTH / 2;
-const canvasY = BASE_HEIGHT - canvasHeight; 
+const canvasY = BASE_HEIGHT - canvasHeight/2; 
 
 
 export function canvasSize() {

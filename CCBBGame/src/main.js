@@ -3,6 +3,7 @@ import { startTurn, stopTurn, turnState } from "./js/time.js";
 import { playRoulette } from "./js/roulette.js";
 import { updateBlocks } from "./js/blocks.js";
 import { canvasSize } from "./js/blocks.js";
+import { setupCamera,setdownCamera } from "./js/camera.js";
 
 //それぞれの画面取得
 const firstView =
@@ -13,8 +14,12 @@ document.querySelector("#startgameView");
 
 const finishgameView =
 document.getElementById("finishgameView");
+
 const cameraView =
 document.querySelector("#cameraView");
+
+const resultView =
+document.querySelector("#resultView");
 
 const countDown =
 document.querySelector("#countDown");
@@ -25,6 +30,8 @@ document.getElementById("whoSelectedText");
 const colorSystemExplainText =
 document.getElementById("colorSystemExplainText");
 
+const reusltText =
+document.getElementById("reusltText");
 
 
 
@@ -55,8 +62,6 @@ let myColorDecided = false;
 let myColors = [];
 let myId = null;
 
-// ゲーム終了結果画面
-const resultText = document.getElementById("resultText");
 
 
 
@@ -136,13 +141,15 @@ connect((data)=>{
         turnState.started = false;
         turnState.isMyTurn = false;
 
-        finishgameView.style.display = "flex";
+        cameraView.style.display = "none";
+        finishgameView.style.display = "block";
 
         if (me.result === "WIN") {
-            resultText.textContent = "あなたの勝ち！";
+            reusltText.textContent = "あなたの勝ち！";
         } else {
-            resultText.textContent = "あなたの負け！";
+            reusltText.textContent = "あなたの負け！";
         }
+        setdownCamera(); 
     }
 
 
@@ -266,8 +273,7 @@ function startCountDown(isMe) {
 }
 
 
-//カメラ画面
-import { setupCamera } from "./js/camera.js";
+
 
 function setUpgameView(){
     setupCamera(myColors);

@@ -89,19 +89,6 @@
           top: 0;
       }
 
-      /* 結果画面 */
-      #finishgameView {
-          position:fixed;
-          inset:0;
-          z-index:9999;
-
-          justify-content:center;
-          align-items:center;
-
-          background:rgba(0,0,0,.4);
-
-          pointer-events:none;
-      }
 
       .result-window {
           width:400px;
@@ -116,6 +103,7 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+  
 
     <!--タイトル画面-->
     <div id="firstView">
@@ -291,13 +279,34 @@
 
     <!-- ゲーム終了画面 -->
     <div id="finishgameView" style="display:none;">
-      <div class="result-window">
-        <h1>ゲーム終了</h1>
+      <div class="center">
+        <div class="container">
 
-        <h2 id="resultText"></h2>
+          <div class="towCardTrans">
+            <div class="center">
+              <div style="font-size: 40px;">ゲーム終了</div>
+              <div id="reusltText" style="font-size: 40px; margin-bottom:50px;"></div>
+              <div class="container">
+                <img src="src/images/3.png" style="width:250px;" alt="サンプル画像">
+                <div>
+                  <h2>最高の高さ</h2>
+                  <h2 style="margin-left:50px;">m</h2>
+                </div>
+              </div>
+              <div>とても素晴らしい戦いでした</div>
+              <!--button style="position: relative; top: 2vh;" >Restart</button-->
+            </div>
+          </div>
+          <!--div class="towCard"-->
+          </div>
 
-        <button id="closeResult">閉じる</button>
+        </div>
       </div>
+
+       
+
+      <button id="closeResult">閉じる</button>
+
     </div>
     
   </body>

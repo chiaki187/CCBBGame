@@ -97,6 +97,27 @@ button{
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
+.towCardTrans {
+  flex: 1;
+  width: 600px;
+  height: 600px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 40px;
+}
+.towCard {
+  flex: 1;
+  width: 400px;
+  height: 600px;
+  flex-shrink: 0;
+  background: rgb(255, 255, 255);
+  border-radius: 12px;
+  padding: 0px;
+  margin: 40px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
 .transparentcard {
   flex: 1;
   height: 450px;

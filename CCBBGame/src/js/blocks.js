@@ -11,6 +11,9 @@ matterCanvas.getContext("2d");
 // サーバから来たブロックを保存
 let blocks = [];
 
+const blockWidth = 80;
+const blockHeight = 40;
+
 
 // 画面基本サイズ（サーバー基準）
 const BASE_WIDTH = 1280;
@@ -19,7 +22,7 @@ const BASE_HEIGHT = 720;
 const canvasWidth = BASE_WIDTH / 3;
 const canvasHeight = 10;
 const canvasX = BASE_WIDTH / 2;
-const canvasY = BASE_HEIGHT - canvasHeight/2; 
+const canvasY = BASE_HEIGHT - canvasHeight;
 
 
 export function canvasSize() {
@@ -89,16 +92,15 @@ export function drawBlocks(){
             block.angle
         );
 
-
         ctx.fillStyle =
         block.color;
 
 
         ctx.fillRect(            
-            -20 * scaleX,
-            -10 * scaleY,
-             40 * scaleX,
-             20 * scaleY
+            -blockWidth / 2 * scaleX,
+            -blockHeight / 2 * scaleY,
+             blockWidth * scaleX,
+             blockHeight * scaleY
         );
 
 

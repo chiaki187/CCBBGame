@@ -1,4 +1,4 @@
-import { connect,send } from "./js/websocket.js";
+import { connect, send, reConnect } from "./js/websocket.js";
 import { startTurn, stopTurn, turnState } from "./js/time.js";
 import { playRoulette } from "./js/roulette.js";
 import { updateBlocks } from "./js/blocks.js";
@@ -19,7 +19,7 @@ const cameraView =
 document.querySelector("#cameraView");
 
 const resultView =
-document.querySelector("#resultView");
+document.querySelector("#finishgameView");
 
 const countDown =
 document.querySelector("#countDown");
@@ -41,8 +41,6 @@ document.getElementById("whoSelectedText");
 
 const colorSystemExplainText =
 document.getElementById("colorSystemExplainText");
-
-
 
 
 
@@ -170,6 +168,7 @@ connect((data)=>{
     }
 
     if(data.type === "OPPONENT_DISCONNECTED"){
+
         console.log("相手が切断しました");
         stopTurn();
 
@@ -222,6 +221,17 @@ connect((data)=>{
     if(data.type==="DROP"){
         dropText.textContent = "drop!";
         dropText.style.display = "block";
+    }
+    if(data.type === "RESTART_GAME"){
+        console.log("リスタートがmainに帰ってきました");
+        location.reload();
+
+        finishgameView.style.display = "none";
+        firstView.style.display = "block";
+
+        // 必要な変数を初期化
+        myColorDecided = false;
+        selectedColor = null;
     }
 
 });
@@ -300,7 +310,12 @@ decideBtn.addEventListener("click", () => {
 
 // 結果画面閉じるボタン
 document.getElementById("closeResult").addEventListener("click", () => {
-    finishgameView.style.display = "none";
+    console.log("リスタートします");
+    send({
+        type: "RESTART"
+    });
+    closeResult.style.background="#cccccc";
+    closeResult.innerHTML="WAIT..."
 });
 
 

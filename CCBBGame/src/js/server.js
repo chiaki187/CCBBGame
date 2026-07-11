@@ -5,6 +5,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import Matter from "matter-js";
 
+
+
 const {
     Engine,
     Bodies,
@@ -210,7 +212,8 @@ wss.on("connection", (ws) => {
         currentBlock: null, // 現在のブロック情報
         currentColor: null, // 現在のブロックの色
         previewX: BASE_WIDTH / 2, // 仮ブロックの初期位置x
-        previewY: 50 // 仮ブロックの初期位置y
+        previewY: 50, // 仮ブロックの初期位置y
+        restartReady: false,   
     });
 
     ws.send(JSON.stringify({
@@ -304,6 +307,35 @@ wss.on("connection", (ws) => {
         // クライアントへ返す通信
         if(data.type !== "SPAWN_BLOCK" && data.type!="MOVE_BLOCK"){
             sendToRoom(room, data);
+        }
+
+        //リセットボタンを押したら
+        if(data.type === "RESTART"){
+            const player = room.players.get(ws);
+            if (!player) return;
+
+            // 自分はリスタート準備完了
+            player.restartReady = true;
+
+            // リスタート準備完了の人数を数える
+            const restartPlayers =
+                Array.from(room.players.values())
+                .filter(p => p.restartReady);
+
+            console.log("reset押した人数："+restartPlayers.length);
+            // 2人とも押したら
+            if(restartPlayers.length === 2){
+
+                // 次回のためにフラグを戻す
+                room.players.forEach(player => {
+                    player.restartReady = false;
+                });
+
+                // クライアントへ通知
+                sendToRoom(room,{
+                    type:"RESTART_GAME"
+                });
+            }
         }
     });
 

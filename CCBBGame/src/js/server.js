@@ -105,6 +105,7 @@ function createRoom() {
     const room = {
         id: Math.random().toString(36).substring(2, 12),
         players: new Map(),
+        noEntry: false,
         engine,
         world,
         ground,
@@ -129,15 +130,17 @@ function createRoom() {
 }
 
 function findAvailableRoom() {
-
     for (const room of rooms.values()) {
+        console.log("NG:",room.noEntry);
+        if (room.noEntry) {
+            continue;
+        }
 
         if (room.players.size < 2) {
             return room;
         }
     }
-    const room =
-        createRoom();
+    const room = createRoom();
 
     rooms.set(
         room.id,
@@ -309,27 +312,70 @@ wss.on("connection", (ws) => {
         if(!room){
             return;
         }
-        console.log("切断 Room:" + room.id);
+        room.noEntry = true;
 
         // 切断されたプレイヤーを削除
         room.players.delete(ws);
-
-        sendToRoom(
-            room,
-            {
-                type: "OPPONENT_DISCONNECTED"
+        
+        // 残っているプレイヤーだけに送信
+        room.players.forEach((player, otherWs) => {
+            if (otherWs.readyState === 1) {
+                otherWs.send(JSON.stringify({
+                    type: "OPPONENT_DISCONNECTED"
+                }));
             }
-        )
-        clearInterval(room.turnTimer);
-        clearInterval(room.engineInterval);
-        rooms.delete(room.id);
+        });
+        
+        // room.players.forEach((player, otherWs) => {
+        //     if (otherWs !== ws && otherWs.readyState === 1) {
+        //         otherWs.send(JSON.stringify({
+        //             type: "OPPONENT_DISCONNECTED"
+        //         }));
+        //     }
+        // });
+        
+        // room.players.clear();
+
+        // clearInterval(room.turnTimer);
+        // clearInterval(room.engineInterval);
+        // rooms.delete(room.id);
+        
+        // if (room.players.size === 0) {
+        //     clearInterval(room.turnTimer);
+        //     clearInterval(room.engineInterval);
+        //     rooms.delete(room.id);
+        // }
+        
+        // setTimeout(() => {
+        //         clearInterval(room.turnTimer);
+        //         clearInterval(room.engineInterval);
+        //         rooms.delete(room.id);
+        // }, 500);
+
+
     });
 });
+
+function getTowerHeight(room) {
+    // 落下済みブロック
+    const settledBlocks = room.world.bodies
+                            .filter(body =>
+                                body.label === "block" &&
+                                body.isSettled === true
+                            );
+
+    if (settledBlocks.length === 0) {
+        return 0;
+    }
+    // 落下済みブロックの高さ
+    const highestY = Math.min(...settledBlocks.flatMap(block => block.vertices.map(v => v.y)));
+    // 地面から落下済みブロックまでの高さ
+    return groundY - highestY;
+}
 
 // イベント関数（room別）
 function setupRoomEvents(room) {
     Events.on(room.engine, "afterUpdate", ()=>{
-
         if(room.gameFinished){
             return;
         }
@@ -341,7 +387,10 @@ function setupRoomEvents(room) {
 
             if(body.position.y > OUT_Y){
                 room.gameFinished = true;
-                console.log("Game Over", room.id);
+                const towerHeight = getTowerHeight(room);
+                room.finalHeight = towerHeight;
+
+                console.log("Game Over", room.id, ", Height:", towerHeight);
                 const resultPlayers = [];
                 
                 room.players.forEach(player => {
@@ -355,8 +404,8 @@ function setupRoomEvents(room) {
                     room,
                     {
                         type: "RESULT_PLAYERS",
-                        players:
-                            resultPlayers
+                        players: resultPlayers,
+                        towerHeight: towerHeight
                     }
                 );
                 break;
@@ -364,13 +413,33 @@ function setupRoomEvents(room) {
         }
     });
 
-    Events.on(room.engine, "collisionStart", event=>{
-        event.pairs.forEach( pair=>{
-            const hitGround = pair.bodyA.label === "ground" ||
-                                pair.bodyB.label === "ground";
-            
-            if(hitGround){
-                console.log("Room " + room.id + ":Ground接触");
+    Events.on(room.engine, "collisionStart", event => {
+        event.pairs.forEach(pair => {
+            const a = pair.bodyA;
+            const b = pair.bodyB;
+
+            // 接触したらtrue
+            const blockToGround =
+                a.label === "block" &&
+                b.label === "ground";
+
+            const groundToBlock =
+                a.label === "ground" &&
+                b.label === "block";
+                
+            const blockToBlock =
+                a.label === "block" &&
+                b.label === "block";
+
+            if (blockToGround) {
+                a.isSettled = true;
+            }
+            if (groundToBlock) {
+                b.isSettled = true;
+            }
+            if (blockToBlock) {
+                a.isSettled = true;
+                b.isSettled = true;
             }
         });
     });
@@ -462,6 +531,9 @@ function startMainTurn(room) {
                         }
                     }
                 );
+
+            // 地面や他のブロックに接触したかの有無（空中ならfalse）
+            realBlock.isSettled = false;
 
             World.add(room.world, realBlock);
         }

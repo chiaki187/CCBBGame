@@ -24,11 +24,6 @@ document.querySelector("#resultView");
 const countDown =
 document.querySelector("#countDown");
 
-const whoSelectedText =
-document.getElementById("whoSelectedText");
-
-const colorSystemExplainText =
-document.getElementById("colorSystemExplainText");
 
 const reusltText =
 document.getElementById("reusltText");
@@ -40,6 +35,14 @@ document.querySelector("#turnPlayer");
 
 const dropText =
 document.querySelector("#dropText");
+
+const whoSelectedText =
+document.getElementById("whoSelectedText");
+
+const colorSystemExplainText =
+document.getElementById("colorSystemExplainText");
+
+
 
 
 
@@ -70,6 +73,12 @@ let myColorDecided = false;
 let myColors = [];
 let myId = null;
 
+// ゲーム終了結果画面
+const resultText = 
+document.getElementById("resultText");
+
+const towerHeightText = 
+document.getElementById("towerHeightText");
 
 
 
@@ -161,6 +170,7 @@ connect((data)=>{
     }
 
     if(data.type === "OPPONENT_DISCONNECTED"){
+        console.log("相手が切断しました");
         stopTurn();
 
         turnState.started = false;
@@ -184,11 +194,15 @@ connect((data)=>{
         cameraView.style.display = "none";
         finishgameView.style.display = "block";
 
+        const towerHeight = Math.round(data.towerHeight);
+
         if (me.result === "WIN") {
             reusltText.textContent = "あなたの勝ち！";
+            towerHeightText.textContent = `高さ ${towerHeight} px`;
         } else {
             reusltText.textContent = "あなたの負け！";
-        }
+            towerHeightText.textContent = `高さ ${towerHeight} px`;
+        } 
         setdownCamera(); 
     }
 

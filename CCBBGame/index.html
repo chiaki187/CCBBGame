@@ -78,8 +78,11 @@
          
       }
 
+      #camera {
+        transform: scaleX(-1);
+      }
      
-      #camera,#canvas, #overlay,#matterCanvas {
+      #canvas, #overlay,#matterCanvas {
          
           /*aspect-ratio: 16 / 9;*/
           width: 100%;
@@ -302,6 +305,8 @@
           </div>
           <div class="towCard">
           </div>
+        <h2 id="resultText"></h2>
+        <h2 id="towerHeightText"></h2>
 
         </div>
       </div>

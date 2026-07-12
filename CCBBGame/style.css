@@ -23,10 +23,9 @@ body{
 .container {
   display: flex;
   gap: 15px;
-  justify-content: center;   /* ← これを追加！ */
+  justify-content: center;
 }
 
-/* ここがポイント */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;

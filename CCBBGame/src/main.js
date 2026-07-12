@@ -85,6 +85,11 @@ connect((data)=>{
         //画面の表示切替
         firstView.style.display = "none";
         startgameView.style.display = "block";
+
+        requestAnimationFrame(() => {
+            originalSizes.delete("startgameContent");
+            fitToScreen("startgameContent");
+        });
     }
 
     
@@ -322,6 +327,12 @@ function startCountDown(isMe) {
             clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";
+
+            requestAnimationFrame(() => {
+                originalSizes.delete("cameraContent");
+                fitToScreen("cameraContent");
+            });
+
             turnPlayer.textContent = isMe ? "あなたのターンです" : "相手のターンです";
             canvasSize();
             startTurn();
@@ -351,3 +362,45 @@ import { setupCamera } from "./js/camera.js";
 function setUpgameView(){
     setupCamera(myColors);
 }
+
+
+const originalSizes = new Map();
+
+function fitToScreen(elementId) {
+
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    // transformを解除して本来のサイズを取得
+    element.style.transform = "none";
+
+    // 毎回最新サイズを取得
+    const rect = element.getBoundingClientRect();
+
+    const width = rect.width;
+    const height = rect.height;
+
+    originalSizes.set(elementId, {
+        width,
+        height
+    });
+
+    const scaleX = window.innerWidth / width;
+    const scaleY = window.innerHeight / height;
+
+    const scale = Math.min(scaleX, scaleY, 0.8);
+
+    element.style.transformOrigin = "center center";
+    // element.style.transform = `scale(${scale})`;
+    element.style.transform = `translate(0,0) scale(${scale})`;
+
+}
+
+window.addEventListener("resize", () => {
+
+    fitToScreen("firstViewContent");
+    fitToScreen("startgameContent");
+    fitToScreen("cameraContent");
+    fitToScreen("finishgameContent");
+
+});

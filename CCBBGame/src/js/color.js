@@ -36,7 +36,6 @@ export function showWaiting(myColorDecided) {
     
     const msg = document.createElement("p");
     msg.id = "waitingText";
-    msg.textContent = "カラー選択中...";
 
     opponentDiv.prepend(msg);
 }

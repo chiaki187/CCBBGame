@@ -11,6 +11,12 @@ document.querySelector("#firstView");
 const startgameView =
 document.querySelector("#startgameView");
 
+const startBtn = 
+document.getElementById("startBtn");
+
+const waitingView =
+document.querySelector("#waitingView");
+
 const finishgameView =
 document.getElementById("finishgameView");
 
@@ -75,153 +81,154 @@ const towerHeightText =
 document.getElementById("towerHeightText");
 
 
+function connectServer(){
+    connect((data)=>{
 
-connect((data)=>{
-
-    if(data.type === "PLAYER_COUNT"){
+        if(data.type === "PLAYER_COUNT"){
 
 
-    }else if(data.type === "START_GAME"){
-        //画面の表示切替
-        firstView.style.display = "none";
-        startgameView.style.display = "block";
+        }else if(data.type === "START_GAME"){
+            //画面の表示切替
+            waitingView.style.display = "none";
+            startgameView.style.display = "block";
 
-        requestAnimationFrame(() => {
-            originalSizes.delete("startgameContent");
-            fitToScreen("startgameContent");
-        });
-    }
+            requestAnimationFrame(() => {
+                originalSizes.delete("startgameContent");
+                fitToScreen("startgameContent");
+            });
+        }
 
-    
-    if (data.type === "INIT") {
-        myId = data.id;
-        console.log("自分ID:", myId);
-    }
+        
+        if (data.type === "INIT") {
+            myId = data.id;
+            console.log("自分ID:", myId);
+        }
 
-    if (data.type === "COLOR_STATE") {
+        if (data.type === "COLOR_STATE") {
 
-        const players = data.players;
+            const players = data.players;
 
-        // 人数不足
-        if (players.length < 2) {
-            showWaiting(myColorDecided);
+            // 人数不足
+            if (players.length < 2) {
+                showWaiting(myColorDecided);
+                return;
+            }
+            
+            // 決定してる色だけ取り出す
+            const decidedPlayers = players.filter(p => p.decided);
+            console.log(decidedPlayers.length)
+            if (decidedPlayers.length === 2) {
+                
+                // 自分を特定
+                const me = players.find(p => p.id === myId);
+                // 相手を特定
+                const opponent = players.find(p => p.id !== myId)
+
+                if (me && opponent && me.decided && opponent.decided) {
+                    // 相手のカラー表示
+                    showOpponentPalette(boxes_opponent, opponent.colors);
+
+                } else {
+                    console.log("相手データが取得できない");
+                }
+
+            } else {
+                showWaiting(myColorDecided);
+            }
+        }
+
+        if (data.type === "SELECT_PLAYER") {
+            const isMe = data.playerId === myId;
+
+            colorSystemExplainText.style.display = "none";
+            // カラールーレット開始
+            playRoulette(isMe, () => {
+                showSelectedPalette(boxes_selected, data.colors, isMe);
+                startCountDown(isMe);
+
+                if(isMe){
+                    whoSelectedText.textContent="あなたの色が選択されました！";
+                }else{
+                    whoSelectedText.textContent="あいての色が選択されました！";
+                }
+                
+            });
+        }
+
+        if(data.type === "YOUR_TURN"){
+            console.log("自分のターン");
+            turnPlayer.textContent = "あなたのターンです";
+            turnState.isMyTurn = true;
+
+            const color = myColors[Math.floor(Math.random() * myColors.length)];
+
+            send({
+                type:"PREPARE_BLOCK",
+                color:color
+            });
+        }
+        
+        if(data.type === "END_TURN"){
+            console.log("相手のターン");
+            turnPlayer.textContent = "相手のターンです";
+            turnState.isMyTurn = false;
+        }
+
+        if(data.type === "OPPONENT_DISCONNECTED"){
+            console.log("相手が切断しました");
+            stopTurn();
+
+            turnState.started = false;
+            turnState.isMyTurn = false;
+
+            alert("相手が切断しました");
+
+            location.reload();
+
             return;
         }
         
-        // 決定してる色だけ取り出す
-        const decidedPlayers = players.filter(p => p.decided);
-        console.log(decidedPlayers.length)
-        if (decidedPlayers.length === 2) {
-            
-            // 自分を特定
-            const me = players.find(p => p.id === myId);
-            // 相手を特定
-            const opponent = players.find(p => p.id !== myId)
+        if (data.type === "RESULT_PLAYERS") {
+            stopTurn();
+            console.log("RESULT:", data);
+            const me = data.players.find(p => p.id === myId);
 
-            if (me && opponent && me.decided && opponent.decided) {
-                // 相手のカラー表示
-                showOpponentPalette(boxes_opponent, opponent.colors);
+            turnState.started = false;
+            turnState.isMyTurn = false;
 
+            finishgameView.style.display = "flex";
+
+            const towerHeight = Math.round(data.towerHeight);
+
+            if (me.result === "WIN") {
+                resultText.textContent = "あなたの勝ち！";
+                towerHeightText.textContent = `高さ ${towerHeight} px`;
             } else {
-                console.log("相手データが取得できない");
+                resultText.textContent = "あなたの負け！";
+                towerHeightText.textContent = `高さ ${towerHeight} px`;
             }
-
-        } else {
-            showWaiting(myColorDecided);
         }
-    }
 
-    if (data.type === "SELECT_PLAYER") {
-        const isMe = data.playerId === myId;
 
-        colorSystemExplainText.style.display = "none";
-        // カラールーレット開始
-        playRoulette(isMe, () => {
-            showSelectedPalette(boxes_selected, data.colors, isMe);
-            startCountDown(isMe);
-
-            if(isMe){
-                whoSelectedText.textContent="あなたの色が選択されました！";
-            }else{
-                whoSelectedText.textContent="あいての色が選択されました！";
-            }
-            
-        });
-    }
-
-    if(data.type === "YOUR_TURN"){
-        console.log("自分のターン");
-        turnPlayer.textContent = "あなたのターンです";
-        turnState.isMyTurn = true;
-
-        const color = myColors[Math.floor(Math.random() * myColors.length)];
-
-        send({
-            type:"PREPARE_BLOCK",
-            color:color
-        });
-    }
-    
-    if(data.type === "END_TURN"){
-        console.log("相手のターン");
-        turnPlayer.textContent = "相手のターンです";
-        turnState.isMyTurn = false;
-    }
-
-    if(data.type === "OPPONENT_DISCONNECTED"){
-        console.log("相手が切断しました");
-        stopTurn();
-
-        turnState.started = false;
-        turnState.isMyTurn = false;
-
-        alert("相手が切断しました");
-
-        location.reload();
-
-        return;
-    }
-    
-    if (data.type === "RESULT_PLAYERS") {
-        stopTurn();
-        console.log("RESULT:", data);
-        const me = data.players.find(p => p.id === myId);
-
-        turnState.started = false;
-        turnState.isMyTurn = false;
-
-        finishgameView.style.display = "flex";
-
-        const towerHeight = Math.round(data.towerHeight);
-
-        if (me.result === "WIN") {
-            resultText.textContent = "あなたの勝ち！";
-            towerHeightText.textContent = `高さ ${towerHeight} px`;
-        } else {
-            resultText.textContent = "あなたの負け！";
-            towerHeightText.textContent = `高さ ${towerHeight} px`;
+        //ブロックの描画
+        if(data.type==="STATE"){
+            updateBlocks(data.blocks);
         }
-    }
-
-
-    //ブロックの描画
-    if(data.type==="STATE"){
-        updateBlocks(data.blocks);
-    }
-    
-    if(data.type==="DROP_COUNTDOWN"){
-        console.log("受信:", data.count);
-        updateDropCountDown(data.count);
-        if(data.count<=4){
-            dropText.style.display = "none";
+        
+        if(data.type==="DROP_COUNTDOWN"){
+            // console.log("受信:", data.count);
+            // updateDropCountDown(data.count);
+            // if(data.count<=4){
+            //     // dropText.style.display = "none";
+            // }
         }
-    }
-    if(data.type==="DROP"){
-        dropText.textContent = "drop!";
-        dropText.style.display = "block";
-    }
+        if(data.type==="DROP"){
+            // dropText.textContent = "drop!";
+            // dropText.style.display = "block";
+        }
 
-});
+    });
+}
 
 
 
@@ -276,6 +283,19 @@ boxes_me.forEach(box => {
         boxes_me.forEach(b => b.classList.remove("selected"));
         box.classList.add("selected");
         });
+});
+
+// STARTボタンを押したときの処理
+startBtn.addEventListener("click", () => {
+    firstView.style.display = "none";
+    waitingView.style.display = "block";
+
+    requestAnimationFrame(() => {
+        originalSizes.delete("waitingContent");
+        fitToScreen("waitingContent");
+    });
+
+    connectServer();
 });
 
 // 決定ボタンを押したときの処理
@@ -349,10 +369,10 @@ function startCountDown(isMe) {
 
 export function updateDropCountDown(count) {
     if (count <= 0) {
-        dropCountDown.textContent = "drop!";
+        // dropCountDown.textContent = "drop!";
         return;
     }
-    dropCountDown.textContent = `${count}秒後にブロックが落ちます`;
+    // dropCountDown.textContent = `${count}秒後にブロックが落ちます`;
 }
 
 
@@ -399,6 +419,7 @@ function fitToScreen(elementId) {
 window.addEventListener("resize", () => {
 
     fitToScreen("firstViewContent");
+    fitToScreen("waitingContent");
     fitToScreen("startgameContent");
     fitToScreen("cameraContent");
     fitToScreen("finishgameContent");

@@ -34,6 +34,7 @@
       } */
 
       #firstView,
+      #waitingContent,
       #startgameView,
       #cameraView,
       #finishgameView{
@@ -45,6 +46,7 @@
       }
 
       #firstViewContent,
+      #waitingContent,
       #startgameContent,
       #cameraContent,
       #finishgameContent{
@@ -62,7 +64,7 @@
       }
 
       img {
-          width: 300px;
+          width: 200px;
           margin-top: 20px;
       }
 
@@ -72,20 +74,20 @@
           margin-top: 20px;
       }
 
-        .color-box-me, .color-box-opponent, .color-box-selected {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            background: #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: white;
-            text-align: center;
-            gap: 50px;
-        }
+      .color-box-me, .color-box-opponent, .color-box-selected {
+          width: 80px;
+          height: 80px;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+          background: #eee;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          color: white;
+          text-align: center;
+          gap: 50px;
+      }
 
       button {
           margin-top: 10px;
@@ -122,7 +124,6 @@
           position:relative;
           aspect-ratio:16/9;
           min-width:700px;
-         
       }
 
       #camera {
@@ -139,9 +140,6 @@
           top: 0;
       }
 
-
-
-    
 
       #dropText {
           display: none;
@@ -192,8 +190,22 @@
           <div style="font-size: 80px;">Game</div>
           <div style="font-size: 20px;">カラーカスタム積み木ゲーム</div>
 
+          <button id="startBtn" style="position: relative; top: 10vh;" >Start</button>
+        </div>
+      </div>
+    </div>
 
-          <button style="position: relative; top: 10vh;" >Start</button>
+    <!-- 待機画面 -->
+    <div id="waitingView" class="viewCenter" style="display: none;">
+      <div id="waitingContent">
+        <div class="center">
+          <div class="bigtext">相手を探しています</div>
+          <div class="minicontainer waitingAnimation">
+            <div class="minibox red"></div>
+            <div class="minibox yellow"></div>
+            <div class="minibox green"></div>
+            <div class="minibox purle"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -317,15 +329,16 @@
 
           <div class="container ">
             
-              <div class="cameraCard">
+              <div class="cameraCardLeft">
                 <!-- <div class="container">
                   <div class="box red">C</div>
                   <div class="box yellow">C</div>
                   <div class="box green">B</div>
                   <div class="box purle">B</div>
                 </div> -->
-                <div class="cameraMiniCard" style="margin-bottom: 50px;">
-                  <img id="img">
+                <!-- <div class="cameraMiniCard" style="margin-bottom: 50px;"> -->
+                <div class="cameraMiniCard">
+                  <!-- <img id="img"> -->
                   <div class="bigtext" id="turnPlayer"></div>
                   <!-- <div class="bigtext">あなたのターンです</div> -->
                 </div>
@@ -334,13 +347,13 @@
                   <div class="center">
                     <h2>右手の人差し指でブロックを落とす位置を決めよう</h2>
                     <img src="src/images/1.png" alt="サンプル画像">
-                    <h2>自分のターン中に地面の外にブロックが落ちたら負け</h2>
-                    <img src="src/images/2.png" alt="サンプル画像">
+                    <!-- <h2>自分のターン中に地面の外にブロックが落ちたら負け</h2>
+                    <img src="src/images/2.png" alt="サンプル画像"> -->
                     </div>
                 </div>
               </div>
             
-            <div class="cameraCard">
+            <div class="cameraCardRight">
               <div class="col draw " style="top: 0;">  
                 <canvas id="canvas"></canvas>
                 <video id="camera" ></video>
@@ -350,7 +363,6 @@
             </div>
 
           </div>
-          <div id="dropCountDown"></div>
         </div>
       </div>
     </div>

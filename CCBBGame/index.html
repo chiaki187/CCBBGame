@@ -54,6 +54,11 @@
           border: 4px solid transparent;
           border-radius: 10px;
           transition: border-color 0.15s ease;
+
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+
       }
 
       .player-panel.active{
@@ -136,7 +141,7 @@
           <div class="minibox purle"></div>
         </div>
        
-         
+        <img id="selectedImage">
         <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
         <div id="countDown" class="bigtext" >積み木の色を
           <span style="color:#FA8B8A;">カ</span>
@@ -303,7 +308,7 @@
               <button id="closeResult" style="position: relative; top: 2vh;" >Restart</button>
             </div>
           </div>
-          <div class="towCard">
+          <div id="towCard" class="towCard">
           </div>
         </div>
       </div>

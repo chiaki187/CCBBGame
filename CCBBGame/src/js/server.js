@@ -114,7 +114,7 @@ function createRoom() {
         turnIndex: 0,
         turnTimer: null,
         mainTurnStarted: false,
-        gameFinished: false
+        gameFinished: false,
     };
 
     // 物理演算
@@ -175,6 +175,7 @@ function sendColorState(room) {
 
 function sendSelectedPlayer(room) {
     console.log("SELECT_PLAYER送信");
+    console.log("SELECT_PLAYER送信");
     const playerList = Array.from(room.players.values());
 
     if (playerList.length !== 2) return;
@@ -187,7 +188,8 @@ function sendSelectedPlayer(room) {
         {
             type: "SELECT_PLAYER",
             playerId: selected.id,
-            colors: selected.colors
+            colors: selected.colors,
+            image: selected.image
         }
     );
 }
@@ -213,7 +215,8 @@ wss.on("connection", (ws) => {
         currentColor: null, // 現在のブロックの色
         previewX: BASE_WIDTH / 2, // 仮ブロックの初期位置x
         previewY: 50, // 仮ブロックの初期位置y
-        restartReady: false,   
+        restartReady: false,  
+        image:null 
     });
 
     ws.send(JSON.stringify({
@@ -244,10 +247,11 @@ wss.on("connection", (ws) => {
             if(!player){
                 return;
             }
-
+            
             player.colors=data.colors;
             player.selectedColor=data.selectedColor;
             player.decided=true;
+            player.image = data.image;
 
             sendColorState(room);
 

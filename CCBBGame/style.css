@@ -113,7 +113,7 @@ button{
   flex-shrink: 0;
   background: rgb(255, 255, 255);
   border-radius: 12px;
-  padding: 0px;
+  padding: 20px;
   margin: 40px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }

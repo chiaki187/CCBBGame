@@ -42,6 +42,20 @@ document.getElementById("whoSelectedText");
 const colorSystemExplainText =
 document.getElementById("colorSystemExplainText");
 
+const selectedImage =
+document.getElementById("selectedImage");
+
+const palette =
+document.getElementById("palette");
+
+const opponent =
+document.getElementById("opponent");
+
+const towCard =
+document.getElementById("towCard");
+
+
+let saveImage=null;
 
 
 
@@ -139,11 +153,15 @@ connect((data)=>{
             showSelectedPalette(boxes_selected, data.colors, isMe);
             startCountDown(isMe);
 
+            saveImage=`url(${data.image})`;
             if(isMe){
+                palette.style.backgroundImage = saveImage;
                 whoSelectedText.textContent="あなたの色が選択されました！";
             }else{
+                opponent.style.backgroundImage = saveImage;
                 whoSelectedText.textContent="あいての色が選択されました！";
             }
+            
             
         });
     }
@@ -202,6 +220,7 @@ connect((data)=>{
             reusltText.textContent = "あなたの負け！";
             towerHeightText.textContent = `高さ ${towerHeight} px`;
         } 
+        towCard.style.backgroundImage = saveImage;
         setdownCamera(); 
     }
 
@@ -243,7 +262,7 @@ function updateColorsFromBoxes() {
 }
 
 //画像データ保存用変数
-    let myImage = null;
+let myImage = null;
 
 
 // ファイル（画像）選択したときの処理
@@ -251,22 +270,23 @@ fileInput.addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const imageUrl = URL.createObjectURL(file);
-    img.src = imageUrl;
+    img.src = URL.createObjectURL(file);
 
-    //画像データ保存用
     const reader = new FileReader();
+
     reader.onload = () => {
-        myImage = reader.result;   // Base64文字列
+        myImage = reader.result;
     };
+
     reader.readAsDataURL(file);
 
-
-    img.onload = function () {
+    img.onload = () => {
         generatePalette(img, boxes_me, colorThief);
         updateColorsFromBoxes();
     };
 });
+
+
 
 // ランダムカラーボタンを押したときの処理
 randomBtn.addEventListener("click", () => {
@@ -293,6 +313,7 @@ boxes_me.forEach(box => {
 
 // 決定ボタンを押したときの処理
 decideBtn.addEventListener("click", () => {
+    
 
     if (!selectedColor || myColorDecided) return;
     decideBtn.style.background="#cccccc";

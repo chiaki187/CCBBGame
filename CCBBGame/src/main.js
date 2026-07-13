@@ -8,14 +8,17 @@ import { canvasSize } from "./js/blocks.js";
 const firstView =
 document.querySelector("#firstView");
 
+const waitingView =
+document.querySelector("#waitingView");
+
 const startgameView =
 document.querySelector("#startgameView");
 
 const startBtn = 
 document.getElementById("startBtn");
 
-const waitingView =
-document.querySelector("#waitingView");
+const nextDelete =
+document.querySelectorAll(".nextDelete");
 
 const finishgameView =
 document.getElementById("finishgameView");
@@ -110,7 +113,7 @@ function connectServer(){
 
             // 人数不足
             if (players.length < 2) {
-                showWaiting(myColorDecided);
+                // showWaiting(myColorDecided);
                 return;
             }
             
@@ -132,18 +135,22 @@ function connectServer(){
                     console.log("相手データが取得できない");
                 }
 
-            } else {
-                showWaiting(myColorDecided);
-            }
+            } 
+            // else {
+            //     showWaiting(myColorDecided);
+            // }
         }
 
         if (data.type === "SELECT_PLAYER") {
             const isMe = data.playerId === myId;
+            nextDelete.forEach(element => {
+                element.style.display = "none";
+            });
 
             colorSystemExplainText.style.display = "none";
             // カラールーレット開始
             playRoulette(isMe, () => {
-                showSelectedPalette(boxes_selected, data.colors, isMe);
+                // showSelectedPalette(boxes_selected, data.colors, isMe);
                 startCountDown(isMe);
 
                 if(isMe){
@@ -216,8 +223,8 @@ function connectServer(){
         }
         
         if(data.type==="DROP_COUNTDOWN"){
-            // console.log("受信:", data.count);
-            // updateDropCountDown(data.count);
+            console.log("受信:", data.count);
+            updateDropCountDown(data.count);
             // if(data.count<=4){
             //     // dropText.style.display = "none";
             // }
@@ -312,7 +319,7 @@ decideBtn.addEventListener("click", () => {
         image: myImage
     });
 
-    showWaiting(myColorDecided);
+    // showWaiting(myColorDecided);
 });
 
 // 結果画面閉じるボタン
@@ -372,7 +379,7 @@ export function updateDropCountDown(count) {
         // dropCountDown.textContent = "drop!";
         return;
     }
-    // dropCountDown.textContent = `${count}秒後にブロックが落ちます`;
+    dropCountDown.textContent = count;
 }
 
 

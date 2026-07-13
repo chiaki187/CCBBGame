@@ -42,8 +42,8 @@ export function showWaiting(myColorDecided) {
 
 export function showOpponentPalette(boxes, colors) {
     // "カラー選択中..."削除
-    const msg = document.getElementById("waitingText");
-    if (msg) msg.remove();
+    // const msg = document.getElementById("waitingText");
+    // if (msg) msg.remove();
 
     colors.forEach((color, i) => {
         boxes[i].style.backgroundColor = color;

@@ -54,6 +54,10 @@ document.getElementById("opponent");
 const towCard =
 document.getElementById("towCard");
 
+const resultComment =
+document.getElementById("resultComment");
+
+
 
 let saveImage=null;
 
@@ -220,6 +224,17 @@ connect((data)=>{
             reusltText.textContent = "あなたの負け！";
             towerHeightText.textContent = `高さ ${towerHeight} px`;
         } 
+
+        //最後の戦いのコメント
+        if(towerHeight<100){
+            resultComment.textContent="挑戦の始まりを感じる一戦でした";
+        }else if(towerHeight<200){
+            resultComment.textContent="バランス感覚が光る、印象的な対戦でした"
+        }else if(towerHeight<300){
+            resultComment.textContent="素晴らしい集中力が生んだ、見事な積み上げでした"
+        }else{
+            resultComment.textContent="まさに職人技が光る、伝説的な積み上げでした"
+        }
         towCard.style.backgroundImage = saveImage;
         setdownCamera(); 
     }

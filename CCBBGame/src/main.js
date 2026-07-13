@@ -179,28 +179,34 @@ function connectServer(){
             });
 
             colorSystemExplainText.style.display = "none";
+            whoSelectedText.textContent = "お互いのカラーパレット選択が終了しました";
+            countDown.textContent = "ルーレットを開始します！";
             // カラールーレット開始
-            playRoulette(isMe, () => {
-                // showSelectedPalette(boxes_selected, data.colors, isMe);
-                startCountDown(isMe);
-
-                saveImage=`url(${data.image})`;
-                if(isMe){
-                    palette.style.backgroundImage = saveImage;
-                    whoSelectedText.textContent="あなたの色が選択されました！";
-                    boxes_opponent.forEach(box => {
-                        box.style.backgroundColor = "#ccc";
-                    })
-                    opponent.style.backgroundColor = "#e2e2e2";
-                }else{
-                    opponent.style.backgroundImage = saveImage;
-                    whoSelectedText.textContent="あいての色が選択されました！";
-                    boxes_me.forEach(box => {
-                        box.style.backgroundColor = "#ccc";
-                    });
-                    palette.style.backgroundColor = "#e2e2e2";
-                }
-            });
+            // 3秒待ってからルーレット開始
+            setTimeout(() => {
+                playRoulette(isMe, () => {
+                    // showSelectedPalette(boxes_selected, data.colors, isMe);
+                    setTimeout(() => {
+                        startCountDown(isMe);
+                        if (isMe) {
+                            palette.style.backgroundImage = saveImage;
+                            whoSelectedText.textContent = "あなたの色が選択されました！";
+                            boxes_opponent.forEach(box => {
+                                box.style.backgroundColor = "#ccc";
+                            });
+                            opponent.style.backgroundColor = "#e2e2e2";
+                        } else {
+                            opponent.style.backgroundImage = saveImage;
+                            whoSelectedText.textContent = "相手の色が選択されました！";
+                            boxes_me.forEach(box => {
+                                box.style.backgroundColor = "#ccc";
+                            });
+                            palette.style.backgroundColor = "#e2e2e2";
+                        }
+                    }, 1000); //  2秒
+                    saveImage = `url(${data.image})`;
+                });
+            }, 2000); //  3秒
         }
 
         if(data.type === "YOUR_TURN"){

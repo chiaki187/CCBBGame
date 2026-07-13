@@ -11,11 +11,60 @@
     <style>
       body {
           font-family: sans-serif;
-          padding: 20px;
+          /* padding: 20px; */
+      }
+
+      .viewCenter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      /* #startgameView{
+          width:100vw;
+          height:100vh;
+
+          display:flex;
+          justify-content:center;
+          align-items:center;
+
+          overflow:hidden;
+      } */
+
+      #firstView,
+      #waitingContent,
+      #startgameView,
+      #cameraView,
+      #finishgameView{
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          width:100vw;
+          height:100vh;
+      }
+
+      #firstViewContent,
+      #waitingContent,
+      #startgameContent,
+      #cameraContent,
+      #finishgameContent{
+          /* width:100%;
+          height:100%;
+          transform-origin:center center; */
+          width:100%;
+          height:100%;
+
+          display:flex;
+          justify-content:center;
+          align-items:center;
+
+          transform-origin:center center;
       }
 
       img {
-          width: 300px;
+          width: 200px;
           margin-top: 20px;
       }
 
@@ -25,20 +74,20 @@
           margin-top: 20px;
       }
 
-        .color-box-me, .color-box-opponent, .color-box-selected {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            background: #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: white;
-            text-align: center;
-            gap: 50px;
-        }
+      .color-box-me, .color-box-opponent, .color-box-selected {
+          width: 80px;
+          height: 80px;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+          background: #eee;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          color: white;
+          text-align: center;
+          gap: 50px;
+      }
 
       button {
           margin-top: 10px;
@@ -80,7 +129,6 @@
           position:relative;
           aspect-ratio:16/9;
           min-width:700px;
-         
       }
 
       #camera {
@@ -97,6 +145,27 @@
           top: 0;
       }
 
+
+      #dropText {
+          display: none;
+          font-size: 48px;
+          color: red;
+      }
+
+
+      /* 結果画面 */
+      #finishgameView {
+          position:fixed;
+          inset:0;
+          z-index:9999;
+
+          justify-content:center;
+          align-items:center;
+
+          background:rgba(0,0,0,.4);
+
+          pointer-events:none;
+      }
 
       .result-window {
           width:400px;
@@ -115,30 +184,47 @@
 
     <!--タイトル画面-->
     <div id="firstView">
-      <div class="center">
-        <div class="container">
-          <div class="box red">C</div>
-          <div class="box yellow">C</div>
-          <div class="box green">B</div>
-          <div class="box purle">B</div>
+      <div class="viewCenter">
+        <div class="center">
+          <div class="container">
+            <div class="box red">C</div>
+            <div class="box yellow">C</div>
+            <div class="box green">B</div>
+            <div class="box purle">B</div>
+          </div>
+
+          <div style="font-size: 80px;">Game</div>
+          <div style="font-size: 20px;">カラーカスタム積み木ゲーム</div>
+
+          <button id="startBtn" style="position: relative; top: 10vh;" >Start</button>
         </div>
+      </div>
+    </div>
 
-        <div style="font-size: 80px;">Game</div>
-        <div style="font-size: 20px;">カラーカスタム積み木ゲーム</div>
-
-
-        <button style="position: relative; top: 10vh;" >Start</button>
+    <!-- 待機画面 -->
+    <div id="waitingView" class="viewCenter" style="display: none;">
+      <div id="waitingContent">
+        <div class="center">
+          <div class="bigtext">相手を探しています</div>
+          <div class="minicontainer waitingAnimation">
+            <div class="minibox red"></div>
+            <div class="minibox yellow"></div>
+            <div class="minibox green"></div>
+            <div class="minibox purle"></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!--ゲーム開始画面-->
     <div id="startgameView" style="display:none;">
-      <div class="center">
-        <div class="minicontainer">
-          <div class="minibox red"></div>
-          <div class="minibox yellow"></div>
-          <div class="minibox green"></div>
-          <div class="minibox purle"></div>
+      <div id="startgameContent">
+        <div class="center">
+          <div class="minicontainer">
+            <div class="minibox red"></div>
+            <div class="minibox yellow"></div>
+            <div class="minibox green"></div>
+            <div class="minibox purle"></div>
         </div>
        
         <img id="selectedImage">
@@ -160,129 +246,149 @@
             <button id="randomBtn" style="font-size:small">Random</button>
             <img id="img">
           </div>
+          
+          <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
+          <div id="countDown" class="bigtext" >積み木の色を
+            <span style="color:#FA8B8A;">カ</span>
+            <span style="color:#FACA57;">ス</span>
+            <span style="color:#68D4CB;">タ</span>
+            <span style="color:#AB99E0;">ム</span>
+            しよう！</div>
+          <div class="container">
 
-          <div id="palette" class="card center player-panel">
-            <h2>あなたのパレット</h2>
-            
-            <div>
-              <div id="myPalette" class="center">
-                <div class="row">
-                  <div class="color-box-me"></div>
-                  <div class="color-box-me"></div>
-                  <div class="color-box-me"></div>
-                  <div class="color-box-me"></div>
+            <!--色選択の説明-->
+            <div id="colorSystemExplainText" class="transparentcard center">
+              <h2>好きな写真を選んでね！</h2>       
+              <!-- ファイル選択 -->
+              <input type="file" id="fileInput" accept="image/*">
+              <!-- ランダムカラーボタン -->
+              <button id="randomBtn" style="font-size:small">Random</button>
+              <img id="img">
+            </div>
+
+            <div id="palette" class="card center player-panel">
+              <h2>あなたのパレット</h2>
+              
+              <div>
+                <div id="myPalette" class="center">
+                  <div class="row">
+                    <div class="color-box-me"></div>
+                    <div class="color-box-me"></div>
+                    <div class="color-box-me"></div>
+                    <div class="color-box-me"></div>
+                  </div>
+                  <div class="row">
+                    <div class="color-box-me"></div>
+                    <div class="color-box-me"></div>
+                    <div class="color-box-me"></div>
+                    <div class="color-box-me"></div>
+                  </div>
                 </div>
-                <div class="row">
-                  <div class="color-box-me"></div>
-                  <div class="color-box-me"></div>
-                  <div class="color-box-me"></div>
-                  <div class="color-box-me"></div>
-                </div>
+
+                <!-- <div id="selected" class="center" style="display: none; margin-top: 0px;">
+                  <div class="center">
+                    <div class="row">
+                      <div class="color-box-selected"></div>
+                      <div class="color-box-selected"></div>
+                      <div class="color-box-selected"></div>
+                      <div class="color-box-selected"></div>
+                    </div>
+                    <div class="row">
+                      <div class="color-box-selected"></div>
+                      <div class="color-box-selected"></div>
+                      <div class="color-box-selected"></div>
+                      <div class="color-box-selected"></div>
+                    </div>
+                  </div>
+                </div> -->
               </div>
+              
+                  
+            
+              <p class="nextDelete">決定すると相手にあなたのパレットが送られます</p>
+              <br>
+              <button id="decideBtn" class="nextDelete">決定</button>
+            </div>
 
-              <div id="selected" class="center" style="display: none;">
+            <div id="opponent" class="card center player-panel">
+              <h2>相手のパレット</h2>
+
+              <div >
                 <div class="center">
                   <div class="row">
-                    <div class="color-box-selected"></div>
-                    <div class="color-box-selected"></div>
-                    <div class="color-box-selected"></div>
-                    <div class="color-box-selected"></div>
+                    <div class="color-box-opponent"></div>
+                    <div class="color-box-opponent"></div>
+                    <div class="color-box-opponent"></div>
+                    <div class="color-box-opponent"></div>
                   </div>
-                  
                   <div class="row">
-                    <div class="color-box-selected"></div>
-                    <div class="color-box-selected"></div>
-                    <div class="color-box-selected"></div>
-                    <div class="color-box-selected"></div>
+                    <div class="color-box-opponent"></div>
+                    <div class="color-box-opponent"></div>
+                    <div class="color-box-opponent"></div>
+                    <div class="color-box-opponent"></div>
                   </div>
+                  <h2 class="nextDelete" style="color:#ccc;top: 200px;">相手が色を選んでいます</h2>
                 </div>
-              </div>
             </div>
-            
-                
+            </div>
           
-            <p>決定すると相手にあなたのパレットが送られます</p>
-            <br>
-            <button id="decideBtn">決定</button>
-          </div>
 
-          <div id="opponent" class="card center player-panel">
-            <h2>相手のパレット</h2>
-
-            <div >
-              <div class="center">
-                <div class="row">
-                  <div class="color-box-opponent"></div>
-                  <div class="color-box-opponent"></div>
-                  <div class="color-box-opponent"></div>
-                  <div class="color-box-opponent"></div>
-                </div>
-                <div class="row">
-                  <div class="color-box-opponent"></div>
-                  <div class="color-box-opponent"></div>
-                  <div class="color-box-opponent"></div>
-                  <div class="color-box-opponent"></div>
-                </div>
-                <h2 style="color:#ccc;top: 200px";>相手が色を選んでいます</h2>
-              </div>
-           </div>
-          </div>
+          </div>  
+          <script type="module" src="/src/main.js"></script>
         
-
-        </div>  
-        <script type="module" src="/src/main.js"></script>
-       
+        </div>
       </div>
     </div>
 
 
     <!--カメラ画面-->
     <div id="cameraView" style="display:none;">
-      <div class="center">
-        <div class="minicontainer">
-          <div class="minibox red"></div>
-          <div class="minibox yellow"></div>
-          <div class="minibox green"></div>
-          <div class="minibox purle"></div>
-        </div>
-
-        <div class="container ">
-          
-            <div class="cameraCard">
-              <!-- <div class="container">
-                <div class="box red">C</div>
-                <div class="box yellow">C</div>
-                <div class="box green">B</div>
-                <div class="box purle">B</div>
-              </div> -->
-              <div class="cameraMiniCard" style="margin-bottom: 50px;">
-                <img id="img">
-                <div class="bigtext">あなたのターンです</div>
-              </div>
-              
-              <div class="cameraMiniCard">
-                <div class="center">
-                  <h2>右手の人差し指でブロックを落とす位置を決めよう</h2>
-                  <img src="src/images/1.png" alt="サンプル画像">
-                  <h2>自分のターン中に地面の外にブロックが落ちたら負け</h2>
-                  <img src="src/images/2.png" alt="サンプル画像">
-                  </div>
-              </div>
-            </div>
-          
-          <div class="cameraCard">
-            <div class="col draw " style="top: 0;">  
-              <canvas id="canvas"></canvas>
-              <video id="camera" ></video>
-              <canvas id="overlay"></canvas>
-              <canvas id="matterCanvas"></canvas>
-            </div>
+      <div id="cameraContent">
+        <div class="center">
+          <div class="minicontainer">
+            <div class="minibox red"></div>
+            <div class="minibox yellow"></div>
+            <div class="minibox green"></div>
+            <div class="minibox purle"></div>
           </div>
 
+          <div class="container">
+            
+              <div class="cameraCardLeft">
+                <!-- <div class="container">
+                  <div class="box red">C</div>
+                  <div class="box yellow">C</div>
+                  <div class="box green">B</div>
+                  <div class="box purle">B</div>
+                </div> -->
+                <!-- <div class="cameraMiniCard" style="margin-bottom: 50px;"> -->
+                <div class="cameraMiniCard">
+                  <!-- <img id="img"> -->
+                  <div class="bigtext" id="turnPlayer"></div>
+                  <!-- <div class="bigtext">あなたのターンです</div> -->
+                </div>
+                
+                <div class="cameraMiniCard">
+                  <div class="center">
+                    <h2>右手の人差し指でブロックを落とす位置を決めよう</h2>
+                    <img src="src/images/1.png" alt="サンプル画像">
+                    <!-- <h2>自分のターン中に地面の外にブロックが落ちたら負け</h2>
+                    <img src="src/images/2.png" alt="サンプル画像"> -->
+                    </div>
+                </div>
+              </div>
+            
+            <div class="cameraCardRight">
+              <div class="col draw " style="top: 0;">  
+                <canvas id="canvas"></canvas>
+                <video id="camera" ></video>
+                <canvas id="overlay"></canvas>
+                <canvas id="matterCanvas"></canvas>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <div id="turnPlayer"></div>
-        <div id="dropCountDown"></div>
-        <div id="dropText"></div>
       </div>
     </div>
 

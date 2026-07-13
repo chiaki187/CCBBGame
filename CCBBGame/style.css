@@ -377,15 +377,15 @@ button{
 .dropAnimation{
     display:block;
     animation-name: bounce;
-    animation-duration: 1s;
+    animation-duration: 0.9s;
     animation-fill-mode: forwards;
     animation-timing-function: linear;
     transform-origin: center bottom;
 }
 
 @keyframes bounce {
-    0%   { transform: scale(1.0, 1.0) translate(-50%, -200%); }
-    30%  { transform: scale(1.0, 0.8) translate(-50%, -100%); }
+    0%   { transform: scale(1.0, 1.0) translate(-50%, -150%); }
+    30%  { transform: scale(1.0, 0.8) translate(-50%, 0%); }
     40%  { transform: scale(1.0, 1.0) translate(-50%, 0%); }
     50%  { transform: scale(1.0, 1.2) translate(-50%, -20%); }
     60%  { transform: scale(1.0, 1.0) translate(-50%, -40%); }

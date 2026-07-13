@@ -428,6 +428,7 @@ function startCountDown(isMe) {
             clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";
+            playerCard.style.backgroundImage = saveImage;
 
             requestAnimationFrame(() => {
                 originalSizes.delete("cameraContent");

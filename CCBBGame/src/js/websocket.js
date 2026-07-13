@@ -1,6 +1,10 @@
 let socket;
+let messageCallback;
 
 export function connect(callback) {
+    if (callback) {
+        messageCallback = callback;
+    }
     // 現在開いているページのURLから、本番環境かローカル環境かを自動で判別します
     const isProduction = window.location.hostname !== 'localhost';
     
@@ -18,7 +22,7 @@ export function connect(callback) {
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        callback(data);
+        messageCallback(data);
     };
     
     // エラーが起きたときにログを出せるように
@@ -29,6 +33,15 @@ export function connect(callback) {
     socket.onclose = () => {
         console.log("WebSocket切断");
     };
+
+}
+
+export function reConnect() {
+    socket.close();
+
+    setTimeout(() => {
+        connect();
+    }, 300);
 
 }
 

@@ -22,6 +22,8 @@ let prevY = null; // ← 追加
 //決定した色を入れておく箱
 let colors=[];
 
+let cameraStream;
+
 
 export function createTurnBlock(){
   console.log("createTurnBlock実行");
@@ -85,14 +87,14 @@ export async function setupCamera(color){
     document.querySelector("#canvas");
 
 
-  const stream =
+  cameraStream =
     await navigator.mediaDevices.getUserMedia({
       video:{      },
       audio:false
     });
 
 
-  camera.srcObject = stream;
+  camera.srcObject = cameraStream;
 
 
   await camera.play();
@@ -103,6 +105,22 @@ export async function setupCamera(color){
     overlay,
     canvas
   );
+}
+
+export async function setdownCamera(){
+  if(cameraStream){
+
+        cameraStream.getTracks().forEach(track=>{
+            track.stop();
+        });
+
+        cameraStream = null;
+    }
+
+    const camera =
+      document.querySelector("#camera");
+
+    camera.srcObject = null;
 }
 
 const CONNECTIONS = [

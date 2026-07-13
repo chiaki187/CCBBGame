@@ -103,6 +103,11 @@
           border: 4px solid transparent;
           border-radius: 10px;
           transition: border-color 0.15s ease;
+
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+
       }
 
       .player-panel.active{
@@ -175,6 +180,7 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+  
 
     <!--タイトル画面-->
     <div id="firstView">
@@ -219,6 +225,26 @@
             <div class="minibox yellow"></div>
             <div class="minibox green"></div>
             <div class="minibox purle"></div>
+        </div>
+       
+        <img id="selectedImage">
+        <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
+        <div id="countDown" class="bigtext" >積み木の色を
+          <span style="color:#FA8B8A;">カ</span>
+          <span style="color:#FACA57;">ス</span>
+          <span style="color:#68D4CB;">タ</span>
+          <span style="color:#AB99E0;">ム</span>
+          しよう！</div>
+        <div class="container">
+
+          <!--色選択の説明-->
+          <div id="colorSystemExplainText" class="transparentcard center">
+            <h2>好きな写真を選んでね！</h2>       
+            <!-- ファイル選択 -->
+            <input type="file" id="fileInput" accept="image/*">
+            <!-- ランダムカラーボタン -->
+            <button id="randomBtn" style="font-size:small">Random</button>
+            <img id="img">
           </div>
           
           <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
@@ -370,13 +396,27 @@
 
     <!-- ゲーム終了画面 -->
     <div id="finishgameView" style="display:none;">
-      <div class="result-window">
-        <h1>ゲーム終了</h1>
+      <div class="center">
+        <div class="container">
 
-        <h2 id="resultText"></h2>
-        <h2 id="towerHeightText"></h2>
-
-        <button id="closeResult">閉じる</button>
+          <div class="towCardTrans">
+            <div class="center">
+              <div style="font-size: 40px;">ゲーム終了</div>
+              <div id="reusltText" style="font-size: 40px; margin-bottom:50px;"></div>
+              <div class="container">
+                <img src="src/images/3.png" style="width:250px;" alt="サンプル画像">
+                <div>
+                  <h2>最高の高さ</h2>
+                  <h2 id="towerHeightText" style="margin-left:50px;">m</h2>
+                </div>
+              </div>
+              <div id="resultComment">とても素晴らしい戦いでした</div>
+              <button id="closeResult" style="position: relative; top: 2vh;" >Restart</button>
+            </div>
+          </div>
+          <div id="towCard" class="towCard">
+          </div>
+        </div>
       </div>
     </div>
     

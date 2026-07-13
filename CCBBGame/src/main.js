@@ -1,8 +1,9 @@
-import { connect,send } from "./js/websocket.js";
+import { connect, send, reConnect } from "./js/websocket.js";
 import { startTurn, stopTurn, turnState } from "./js/time.js";
 import { playRoulette } from "./js/roulette.js";
 import { updateBlocks } from "./js/blocks.js";
 import { canvasSize } from "./js/blocks.js";
+import { setupCamera,setdownCamera } from "./js/camera.js";
 
 //それぞれの画面取得
 const firstView =
@@ -26,10 +27,15 @@ document.getElementById("finishgameView");
 const cameraView =
 document.querySelector("#cameraView");
 
+const resultView =
+document.querySelector("#finishgameView");
+
 const countDown =
 document.querySelector("#countDown");
 
 
+const reusltText =
+document.getElementById("reusltText");
 const dropCountDown =
 document.querySelector("#dropCountDown");
 
@@ -45,8 +51,24 @@ document.getElementById("whoSelectedText");
 const colorSystemExplainText =
 document.getElementById("colorSystemExplainText");
 
+const selectedImage =
+document.getElementById("selectedImage");
+
+const palette =
+document.getElementById("palette");
+
+const opponent =
+document.getElementById("opponent");
+
+const towCard =
+document.getElementById("towCard");
+
+const resultComment =
+document.getElementById("resultComment");
 
 
+
+let saveImage=null;
 
 
 
@@ -140,6 +162,18 @@ function connectServer(){
             //     showWaiting(myColorDecided);
             // }
         }
+            saveImage=`url(${data.image})`;
+            if(isMe){
+                palette.style.backgroundImage = saveImage;
+                whoSelectedText.textContent="あなたの色が選択されました！";
+            }else{
+                opponent.style.backgroundImage = saveImage;
+                whoSelectedText.textContent="あいての色が選択されました！";
+            }
+            
+            
+        });
+    }
 
         if (data.type === "SELECT_PLAYER") {
             const isMe = data.playerId === myId;
@@ -203,18 +237,32 @@ function connectServer(){
             turnState.started = false;
             turnState.isMyTurn = false;
 
-            finishgameView.style.display = "flex";
+        cameraView.style.display = "none";
+        finishgameView.style.display = "block";
 
             const towerHeight = Math.round(data.towerHeight);
 
-            if (me.result === "WIN") {
-                resultText.textContent = "あなたの勝ち！";
-                towerHeightText.textContent = `高さ ${towerHeight} px`;
-            } else {
-                resultText.textContent = "あなたの負け！";
-                towerHeightText.textContent = `高さ ${towerHeight} px`;
-            }
+        if (me.result === "WIN") {
+            reusltText.textContent = "あなたの勝ち！";
+            towerHeightText.textContent = `高さ ${towerHeight} px`;
+        } else {
+            reusltText.textContent = "あなたの負け！";
+            towerHeightText.textContent = `高さ ${towerHeight} px`;
+        } 
+
+        //最後の戦いのコメント
+        if(towerHeight<100){
+            resultComment.textContent="挑戦の始まりを感じる一戦でした";
+        }else if(towerHeight<200){
+            resultComment.textContent="バランス感覚が光る、印象的な対戦でした"
+        }else if(towerHeight<300){
+            resultComment.textContent="素晴らしい集中力が生んだ、見事な積み上げでした"
+        }else{
+            resultComment.textContent="まさに職人技が光る、伝説的な積み上げでした"
         }
+        towCard.style.backgroundImage = saveImage;
+        setdownCamera(); 
+    }
 
 
         //ブロックの描画
@@ -233,6 +281,22 @@ function connectServer(){
             // dropText.textContent = "drop!";
             // dropText.style.display = "block";
         }
+    }
+    if(data.type==="DROP"){
+        dropText.textContent = "drop!";
+        dropText.style.display = "block";
+    }
+    if(data.type === "RESTART_GAME"){
+        console.log("リスタートがmainに帰ってきました");
+        location.reload();
+
+        finishgameView.style.display = "none";
+        firstView.style.display = "block";
+
+        // 必要な変数を初期化
+        myColorDecided = false;
+        selectedColor = null;
+    }
 
     });
 }
@@ -244,7 +308,7 @@ function updateColorsFromBoxes() {
 }
 
 //画像データ保存用変数
-    let myImage = null;
+let myImage = null;
 
 
 // ファイル（画像）選択したときの処理
@@ -252,22 +316,23 @@ fileInput.addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const imageUrl = URL.createObjectURL(file);
-    img.src = imageUrl;
+    img.src = URL.createObjectURL(file);
 
-    //画像データ保存用
     const reader = new FileReader();
+
     reader.onload = () => {
-        myImage = reader.result;   // Base64文字列
+        myImage = reader.result;
     };
+
     reader.readAsDataURL(file);
 
-
-    img.onload = function () {
+    img.onload = () => {
         generatePalette(img, boxes_me, colorThief);
         updateColorsFromBoxes();
     };
 });
+
+
 
 // ランダムカラーボタンを押したときの処理
 randomBtn.addEventListener("click", () => {
@@ -307,6 +372,7 @@ startBtn.addEventListener("click", () => {
 
 // 決定ボタンを押したときの処理
 decideBtn.addEventListener("click", () => {
+    
 
     if (!selectedColor || myColorDecided) return;
     decideBtn.style.background="#cccccc";
@@ -324,7 +390,12 @@ decideBtn.addEventListener("click", () => {
 
 // 結果画面閉じるボタン
 document.getElementById("closeResult").addEventListener("click", () => {
-    finishgameView.style.display = "none";
+    console.log("リスタートします");
+    send({
+        type: "RESTART"
+    });
+    closeResult.style.background="#cccccc";
+    closeResult.innerHTML="WAIT..."
 });
 
 
@@ -374,6 +445,7 @@ function startCountDown(isMe) {
 }
 
 
+
 export function updateDropCountDown(count) {
     if (count <= 0) {
         // dropCountDown.textContent = "drop!";
@@ -383,8 +455,6 @@ export function updateDropCountDown(count) {
 }
 
 
-//カメラ画面
-import { setupCamera } from "./js/camera.js";
 
 function setUpgameView(){
     setupCamera(myColors);

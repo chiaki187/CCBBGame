@@ -65,7 +65,8 @@
 
       img {
           width: 200px;
-          margin-top: 20px;
+          height: 150px;
+          align-items: center;
       }
 
       #palette, #opponent, #selected {
@@ -212,7 +213,7 @@
             <div class="minibox purle"></div>
         </div>
        
-        <img id="selectedImage">
+        <!--img id="selectedImage"-->
         <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
         <div id="countDown" class="bigtext" >積み木の色を
           <span style="color:#FA8B8A;">カ</span>
@@ -223,13 +224,18 @@
         <div class="container">
 
           <!--色選択の説明-->
-          <div id="colorSystemExplainText" class="transparentcard center">
-            <h2>好きな写真を選んでね！</h2>       
+          <div id="colorSystemExplainText" class="transparentcard">
+            <h2 style=" margin-top: 40px; text-align: center;">選択方法</h2>       
+            <h3 style=" margin-top: 40px;">❶好きな写真を選択</h3>
             <!-- ファイル選択 -->
             <input type="file" id="fileInput" accept="image/*">
+            <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2>  
+            <img id="img" src="src/images/4.png" alt="サンプル画像">     
+            <h3>❷写真から８色を抽出</h3>
+            <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2> 
+            <h3>❸あなた または 相手 のパレットからランダムに選択！</h3>
             <!-- ランダムカラーボタン -->
-            <button id="randomBtn" style="font-size:small">Random</button>
-            <img id="img">
+            <button id="randomBtn" style="font-size:small; display:none">Random</button>
           </div>
 
             <div id="palette" class="card center player-panel">

@@ -162,18 +162,15 @@ function connectServer(){
             //     showWaiting(myColorDecided);
             // }
         }
-            saveImage=`url(${data.image})`;
-            if(isMe){
-                palette.style.backgroundImage = saveImage;
-                whoSelectedText.textContent="あなたの色が選択されました！";
-            }else{
-                opponent.style.backgroundImage = saveImage;
-                whoSelectedText.textContent="あいての色が選択されました！";
-            }
+            // saveImage=`url(${data.image})`;
+            // if(isMe){
+            //     palette.style.backgroundImage = saveImage;
+            //     whoSelectedText.textContent="あなたの色が選択されました！";
+            // }else{
+            //     opponent.style.backgroundImage = saveImage;
+            //     whoSelectedText.textContent="あいての色が選択されました！";
+            // }
             
-            
-        });
-    }
 
         if (data.type === "SELECT_PLAYER") {
             const isMe = data.playerId === myId;
@@ -187,12 +184,14 @@ function connectServer(){
                 // showSelectedPalette(boxes_selected, data.colors, isMe);
                 startCountDown(isMe);
 
+                saveImage=`url(${data.image})`;
                 if(isMe){
+                    palette.style.backgroundImage = saveImage;
                     whoSelectedText.textContent="あなたの色が選択されました！";
                 }else{
+                    opponent.style.backgroundImage = saveImage;
                     whoSelectedText.textContent="あいての色が選択されました！";
                 }
-                
             });
         }
 
@@ -237,32 +236,37 @@ function connectServer(){
             turnState.started = false;
             turnState.isMyTurn = false;
 
-        cameraView.style.display = "none";
-        finishgameView.style.display = "block";
+            cameraView.style.display = "none";
+            finishgameView.style.display = "block";
+
+            requestAnimationFrame(() => {
+                originalSizes.delete("finishgameContent");
+                fitToScreen("finishgameContent");
+            });
 
             const towerHeight = Math.round(data.towerHeight);
 
-        if (me.result === "WIN") {
-            reusltText.textContent = "あなたの勝ち！";
-            towerHeightText.textContent = `高さ ${towerHeight} px`;
-        } else {
-            reusltText.textContent = "あなたの負け！";
-            towerHeightText.textContent = `高さ ${towerHeight} px`;
-        } 
+            if (me.result === "WIN") {
+                reusltText.textContent = "あなたの勝ち！";
+                towerHeightText.textContent = `高さ ${towerHeight} px`;
+            } else {
+                reusltText.textContent = "あなたの負け！";
+                towerHeightText.textContent = `高さ ${towerHeight} px`;
+            } 
 
-        //最後の戦いのコメント
-        if(towerHeight<100){
-            resultComment.textContent="挑戦の始まりを感じる一戦でした";
-        }else if(towerHeight<200){
-            resultComment.textContent="バランス感覚が光る、印象的な対戦でした"
-        }else if(towerHeight<300){
-            resultComment.textContent="素晴らしい集中力が生んだ、見事な積み上げでした"
-        }else{
-            resultComment.textContent="まさに職人技が光る、伝説的な積み上げでした"
+            //最後の戦いのコメント
+            if(towerHeight<100){
+                resultComment.textContent="挑戦の始まりを感じる一戦でした";
+            }else if(towerHeight<200){
+                resultComment.textContent="バランス感覚が光る、印象的な対戦でした"
+            }else if(towerHeight<300){
+                resultComment.textContent="素晴らしい集中力が生んだ、見事な積み上げでした"
+            }else{
+                resultComment.textContent="まさに職人技が光る、伝説的な積み上げでした"
+            }
+            towCard.style.backgroundImage = saveImage;
+            setdownCamera(); 
         }
-        towCard.style.backgroundImage = saveImage;
-        setdownCamera(); 
-    }
 
 
         //ブロックの描画
@@ -281,11 +285,6 @@ function connectServer(){
             // dropText.textContent = "drop!";
             // dropText.style.display = "block";
         }
-    }
-    if(data.type==="DROP"){
-        dropText.textContent = "drop!";
-        dropText.style.display = "block";
-    }
     if(data.type === "RESTART_GAME"){
         console.log("リスタートがmainに帰ってきました");
         location.reload();
@@ -451,7 +450,7 @@ export function updateDropCountDown(count) {
         // dropCountDown.textContent = "drop!";
         return;
     }
-    dropCountDown.textContent = count;
+    // dropCountDown.textContent = count;
 }
 
 
@@ -488,7 +487,6 @@ function fitToScreen(elementId) {
     const scale = Math.min(scaleX, scaleY, 0.8);
 
     element.style.transformOrigin = "center center";
-    // element.style.transform = `scale(${scale})`;
     element.style.transform = `translate(0,0) scale(${scale})`;
 
 }

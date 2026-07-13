@@ -22,17 +22,6 @@
         height: 100vh;
       }
 
-      /* #startgameView{
-          width:100vw;
-          height:100vh;
-
-          display:flex;
-          justify-content:center;
-          align-items:center;
-
-          overflow:hidden;
-      } */
-
       #firstView,
       #waitingContent,
       #startgameView,
@@ -143,13 +132,6 @@
           position: absolute;
           left: 0;
           top: 0;
-      }
-
-
-      #dropText {
-          display: none;
-          font-size: 48px;
-          color: red;
       }
 
       .result-window {
@@ -313,14 +295,20 @@
                 <!-- <div class="cameraMiniCard" style="margin-bottom: 50px;"> -->
                 <div class="cameraMiniCard">
                   <!-- <img id="img"> -->
-                  <div class="bigtext" id="turnPlayer"></div>
+                  <div id="playerCard"></div>
+                  <div id="turnArea">
+                    <div id="turnPlayer"></div>
+                    <div id="turnPlayerText">のターンです</div>
+                  </div>
                   <!-- <div class="bigtext">あなたのターンです</div> -->
                 </div>
                 
                 <div class="cameraMiniCard">
                   <div class="center">
-                    <h2>右手の人差し指でブロックを落とす位置を決めよう</h2>
-                    <img src="src/images/1.png" alt="サンプル画像">
+                    <h2 class="marker-highlight">ブロック落下まで</h2>
+                    <div id="dropCountDown"></div>
+                    <h2 class="dummyText">右手の人差し指でブロックを落とす位置を決めよう</h2>
+                    <!-- <img src="src/images/1.png" alt="サンプル画像"> -->
                     <!-- <h2>自分のターン中に地面の外にブロックが落ちたら負け</h2>
                     <img src="src/images/2.png" alt="サンプル画像"> -->
                     </div>
@@ -328,6 +316,7 @@
               </div>
             
             <div class="cameraCardRight">
+              <div id="dropText">DROP!</div>
               <div class="col draw " style="top: 0;">  
                 <canvas id="canvas"></canvas>
                 <video id="camera" ></video>
@@ -351,8 +340,8 @@
 
             <div class="towCardTrans">
               <div class="center">
-                <div style="font-size: 40px;">ゲーム終了</div>
-                <div id="reusltText" style="font-size: 40px; margin-bottom:50px;"></div>
+                <div style="font-size: 40px; font-weight: bold;">ゲーム終了</div>
+                <div id="reusltText" style="font-size: 40px; margin-bottom:50px; font-weight: bold;"></div>
                 <div class="container">
                   <img src="src/images/3.png" style="width:250px;" alt="サンプル画像">
                   <div>

@@ -60,6 +60,9 @@ document.getElementById("palette");
 const opponent =
 document.getElementById("opponent");
 
+const playerCard =
+document.getElementById("playerCard");
+
 const towCard =
 document.getElementById("towCard");
 
@@ -135,7 +138,6 @@ function connectServer(){
 
             // 人数不足
             if (players.length < 2) {
-                // showWaiting(myColorDecided);
                 return;
             }
             
@@ -158,18 +160,7 @@ function connectServer(){
                 }
 
             } 
-            // else {
-            //     showWaiting(myColorDecided);
-            // }
         }
-            // saveImage=`url(${data.image})`;
-            // if(isMe){
-            //     palette.style.backgroundImage = saveImage;
-            //     whoSelectedText.textContent="あなたの色が選択されました！";
-            // }else{
-            //     opponent.style.backgroundImage = saveImage;
-            //     whoSelectedText.textContent="あいての色が選択されました！";
-            // }
             
 
         if (data.type === "SELECT_PLAYER") {
@@ -196,8 +187,10 @@ function connectServer(){
         }
 
         if(data.type === "YOUR_TURN"){
+            const player = data.player;
+            playerCard.style.backgroundImage = `url(${player.image})`;
             console.log("自分のターン");
-            turnPlayer.textContent = "あなたのターンです";
+            turnPlayer.textContent = "あなた";
             turnState.isMyTurn = true;
 
             const color = myColors[Math.floor(Math.random() * myColors.length)];
@@ -209,8 +202,11 @@ function connectServer(){
         }
         
         if(data.type === "END_TURN"){
+            const player = data.player;
+            console.log(player);
+            playerCard.style.backgroundImage = `url(${player.image})`;
             console.log("相手のターン");
-            turnPlayer.textContent = "相手のターンです";
+            turnPlayer.textContent = "相手";
             turnState.isMyTurn = false;
         }
 
@@ -282,9 +278,14 @@ function connectServer(){
             // }
         }
         if(data.type==="DROP"){
-            // dropText.textContent = "drop!";
-            // dropText.style.display = "block";
+
+            dropText.style.display = "block";
+
+            dropText.classList.remove("dropAnimation");
+            void dropText.offsetWidth;
+            dropText.classList.add("dropAnimation");
         }
+
     if(data.type === "RESTART_GAME"){
         console.log("リスタートがmainに帰ってきました");
         location.reload();
@@ -300,7 +301,10 @@ function connectServer(){
     });
 }
 
-
+dropText.addEventListener("animationend", () => {
+    dropText.classList.remove("dropAnimation");
+    dropText.style.display = "none";
+});
 
 function updateColorsFromBoxes() {
     myColors = Array.from(boxes_me).map(box => box.textContent);
@@ -430,7 +434,7 @@ function startCountDown(isMe) {
                 fitToScreen("cameraContent");
             });
 
-            turnPlayer.textContent = isMe ? "あなたのターンです" : "相手のターンです";
+            turnPlayer.textContent = isMe ? "あなた" : "相手";
             canvasSize();
             startTurn();
             if(isMe){
@@ -450,7 +454,7 @@ export function updateDropCountDown(count) {
         // dropCountDown.textContent = "drop!";
         return;
     }
-    // dropCountDown.textContent = count;
+    dropCountDown.textContent = count;
 }
 
 

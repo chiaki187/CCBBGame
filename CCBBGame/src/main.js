@@ -188,9 +188,17 @@ function connectServer(){
                 if(isMe){
                     palette.style.backgroundImage = saveImage;
                     whoSelectedText.textContent="あなたの色が選択されました！";
+                    boxes_opponent.forEach(box => {
+                        box.style.backgroundColor = "#ccc";
+                    })
+                    opponent.style.backgroundColor = "#e2e2e2";
                 }else{
                     opponent.style.backgroundImage = saveImage;
                     whoSelectedText.textContent="あいての色が選択されました！";
+                    boxes_me.forEach(box => {
+                        box.style.backgroundColor = "#ccc";
+                    });
+                    palette.style.backgroundColor = "#e2e2e2";
                 }
             });
         }
@@ -346,6 +354,7 @@ randomBtn.addEventListener("click", () => {
 // 色選択
 boxes_me.forEach(box => {
     decideBtn.addEventListener("click", () => {
+        console.log("押されました");
 
         if (myColorDecided) return; // 決定後は変更不可
         selectedColor = box.textContent;

@@ -66,6 +66,8 @@
       img {
           width: 200px;
           height: 150px;
+          margin-left: 50px;
+          margin-top: 20px;
           align-items: center;
       }
 
@@ -161,6 +163,14 @@
 
           pointer-events:auto;
       }
+
+      .shine{
+          color:rgb(0, 0, 0);
+          text-shadow:
+              0 0 5px #fff,
+              0 0 15px #fff,
+              0 0 30px #ffffff88;
+      }
     </style>
 
     <link rel="stylesheet" href="style.css">
@@ -233,13 +243,14 @@
             <img id="img" src="src/images/4.png" alt="サンプル画像">     
             <h3>❷写真から８色を抽出</h3>
             <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2> 
-            <h3>❸あなた または 相手 のパレットからランダムに選択！</h3>
+            <h3>❸あなた または 相手 のパレットから<br>
+                 　ランダムに選択！</h3>
             <!-- ランダムカラーボタン -->
             <button id="randomBtn" style="font-size:small; display:none">Random</button>
           </div>
 
             <div id="palette" class="card center player-panel">
-              <h2>あなたのパレット</h2>
+              <h2 class="shine">あなたのパレット</h2>
               
               <div>
                 <div id="myPalette" class="center">
@@ -266,7 +277,7 @@
             </div>
 
             <div id="opponent" class="card center player-panel">
-              <h2>相手のパレット</h2>
+              <h2 class="shine">相手のパレット</h2>
 
               <div >
                 <div class="center">
@@ -282,7 +293,7 @@
                     <div class="color-box-opponent"></div>
                     <div class="color-box-opponent"></div>
                   </div>
-                  <h2 class="nextDelete" style="color:#ccc;top: 200px;">相手が色を選んでいます</h2>
+                  <h2 class="nextDelete" style="color:#ccc;margin-top: 120px;">相手が色を選んでいます</h2>
                 </div>
             </div>
             </div>

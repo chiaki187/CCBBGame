@@ -187,17 +187,6 @@ button{
   padding: 20px;
   margin: 40px;
 }
-/* .towCard {
-  flex: 1;
-  width: 400px;
-  height: 600px;
-  flex-shrink: 0;
-  background: rgb(255, 255, 255);
-  border-radius: 12px;
-  padding: 20px;
-  margin: 40px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-} */
 
 .towCard {
   flex: 1;
@@ -211,7 +200,6 @@ button{
   margin: 40px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 
-  /* 画像表示用 */
   overflow: hidden;
   background-repeat: no-repeat;
   background-position: center;

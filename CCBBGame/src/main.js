@@ -236,9 +236,12 @@ function connectServer(){
 
             alert("相手が切断しました");
 
-            location.reload();
+            send({
+                type: "GO_TITLE"
+            });
+            // location.reload();
 
-            return;
+            // return;
         }
         
         if (data.type === "RESULT_PLAYERS") {
@@ -303,17 +306,23 @@ function connectServer(){
             dropText.classList.add("dropAnimation");
         }
 
-    if(data.type === "RESTART_GAME"){
-        console.log("リスタートがmainに帰ってきました");
-        location.reload();
+        if(data.type === "GO_TITLE"){
+            if(data.playerId === myId){
+                location.reload();
+            }
+        }
 
-        finishgameView.style.display = "none";
-        firstView.style.display = "block";
+    // if(data.type === "RESTART_GAME"){
+    //     console.log("リスタートがmainに帰ってきました");
+    //     location.reload();
 
-        // 必要な変数を初期化
-        myColorDecided = false;
-        selectedColor = null;
-    }
+    //     finishgameView.style.display = "none";
+    //     firstView.style.display = "block";
+
+    //     // 必要な変数を初期化
+    //     myColorDecided = false;
+    //     selectedColor = null;
+    // }
 
     });
 }
@@ -413,10 +422,10 @@ decideBtn.addEventListener("click", () => {
 document.getElementById("closeResult").addEventListener("click", () => {
     console.log("リスタートします");
     send({
-        type: "RESTART"
+        type: "GO_TITLE"
     });
-    closeResult.style.background="#cccccc";
-    closeResult.innerHTML="WAIT..."
+    // closeResult.style.background="#cccccc";
+    // closeResult.innerHTML="WAIT..."
 });
 
 

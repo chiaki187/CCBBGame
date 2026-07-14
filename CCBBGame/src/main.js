@@ -60,8 +60,11 @@ document.getElementById("palette");
 const opponent =
 document.getElementById("opponent");
 
-const playerCard =
-document.getElementById("playerCard");
+const cameraContent = 
+document.getElementById("cameraContent");
+
+// const playerCard =
+// document.getElementById("playerCard");
 
 const towCard =
 document.getElementById("towCard");
@@ -202,7 +205,7 @@ function connectServer(){
 
         if(data.type === "YOUR_TURN"){
             const player = data.player;
-            playerCard.style.backgroundImage = `url(${player.image})`;
+            // playerCard.style.backgroundImage = `url(${player.image})`;
             console.log("自分のターン");
             turnPlayer.textContent = "あなた";
             turnState.isMyTurn = true;
@@ -218,7 +221,7 @@ function connectServer(){
         if(data.type === "END_TURN"){
             const player = data.player;
             console.log(player);
-            playerCard.style.backgroundImage = `url(${player.image})`;
+            // playerCard.style.backgroundImage = `url(${player.image})`;
             console.log("相手のターン");
             turnPlayer.textContent = "相手";
             turnState.isMyTurn = false;
@@ -443,7 +446,8 @@ function startCountDown(isMe) {
             clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";
-            playerCard.style.backgroundImage = saveImage;
+            cameraView.style.backgroundImage = saveImage;
+            // playerCard.style.backgroundImage = saveImage;
 
             requestAnimationFrame(() => {
                 originalSizes.delete("cameraContent");

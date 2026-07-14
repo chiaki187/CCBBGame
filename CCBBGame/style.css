@@ -158,6 +158,15 @@ button{
     -webkit-appearance: none; /* Safari対策 */
 }
 
+#palette,
+#opponent{
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+    overflow: hidden;
+}
+
 .card {
   flex: 1;
   height: 450px;
@@ -178,16 +187,23 @@ button{
   padding: 20px;
   margin: 40px;
 }
+
 .towCard {
   flex: 1;
   width: 400px;
   height: 600px;
   flex-shrink: 0;
-  background: rgb(255, 255, 255);
+
+  background: #fff;
   border-radius: 12px;
   padding: 20px;
   margin: 40px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 .transparentcard {
@@ -215,24 +231,82 @@ button{
   padding: 10px;
 } */
 
+
 .cameraCardLeft{
-    flex:3;
-    /* padding:10px; */
+    flex: 3;
+    /* min-height: 10vh; */
 
     display: flex;
     flex-direction: column;
-
     gap: 20px;
+    /* min-width: 25vw; */
 }
 
 .cameraCardLeft > .cameraMiniCard:first-child{
     flex: 3;
     min-height: 0;
+
+    width: 100%;
+    /* height: 100%; */
+
+    display: flex;
+    align-items: center;
+    gap: 5%;
+    /* padding: 5%; */
+    box-sizing: border-box;
 }
 
 .cameraCardLeft > .cameraMiniCard:last-child{
     flex: 7;
     min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    /* height: 100%; */
+}
+
+/* 左側のカード */
+#playerCard{
+    height: 90%;
+    aspect-ratio: 4 / 5;
+
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#turnArea{
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+}
+
+#turnPlayer{
+    width: 100%;
+    text-align: center;
+
+    font-weight: bold;
+    font-size: clamp(12px, 8vw, 50px);
+}
+
+#turnPlayerText{
+    width: 100%;
+    text-align: center;
+
+    font-weight: bold;
+    font-size: clamp(8px, 4vw, 16px);
 }
 
 .cameraCardRight{
@@ -241,6 +315,7 @@ button{
     display:flex;
     justify-content:center;
     align-items:center;
+    position: relative;
 }
 
 .cameraMiniCard{
@@ -252,7 +327,55 @@ button{
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
+.marker-highlight {
+  color: white;
+  background-color: #68D4CB;
+  border: solid 1px #68D4CB;
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px;
+}
+
 #dropCountDown{
-    font-size: calc(100vw / 8);
+    margin-top: -20px;
+    font-size: clamp(24px, 12vw, 200px);
     font-weight: bold;
+}
+
+.dummyText{
+    opacity: 0.0;
+    /* white-space: nowrap; */
+    overflow: hidden;
+    /* text-overflow: ellipsis; */
+}
+
+#dropText{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    font-size: 120px;
+    font-weight: bold;
+    color: red;
+
+    display:none;
+    z-index:1000;
+}
+
+.dropAnimation{
+    display:block;
+    animation-name: bounce;
+    animation-duration: 0.9s;
+    animation-fill-mode: forwards;
+    animation-timing-function: linear;
+    transform-origin: center bottom;
+}
+
+@keyframes bounce {
+    0%   { transform: scale(1.0, 1.0) translate(-50%, -150%); }
+    30%  { transform: scale(1.0, 0.8) translate(-50%, 0%); }
+    40%  { transform: scale(1.0, 1.0) translate(-50%, 0%); }
+    50%  { transform: scale(1.0, 1.2) translate(-50%, -20%); }
+    60%  { transform: scale(1.0, 1.0) translate(-50%, -40%); }
+    100% { transform: scale(1.0, 1.0) translate(-50%, 0%); }
 }

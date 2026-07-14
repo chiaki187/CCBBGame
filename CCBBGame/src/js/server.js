@@ -495,14 +495,18 @@ function startMainTurn(room) {
     const currentWs = playerSockets[room.turnIndex];
     const currentPlayer = room.players.get(currentWs);
 
-    if(!currentPlayer){
+    const opponentWs = playerSockets.find(ws => ws !== currentWs);
+    const opponentPlayer = room.players.get(opponentWs);
+
+    if(!currentPlayer || !opponentPlayer){
         return;
     }
 
     currentPlayer.isMyTurn = true;
 
     currentWs.send(JSON.stringify({
-        type: "YOUR_TURN"
+        type: "YOUR_TURN",
+        player: currentPlayer
     }));
 
     console.log("ターン開始:", currentPlayer.id);
@@ -577,7 +581,8 @@ function startMainTurn(room) {
         currentPlayer.isMyTurn = false;
 
         currentWs.send(JSON.stringify({
-            type: "END_TURN"
+            type: "END_TURN",
+            player: opponentPlayer
         }));
 
         room.turnIndex = (room.turnIndex + 1) % playerSockets.length;

@@ -204,7 +204,7 @@ function connectServer(){
                             opponent.style.backgroundColor = "#e2e2e2";
                         } else {
                             backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
-                            backColorOpponent.style.opponent.style.backgroundImage = saveImage;
+                            opponent.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "相手の色が選択されました！";
                             boxes_me.forEach(box => {
                                 box.style.backgroundColor = "#ccc";

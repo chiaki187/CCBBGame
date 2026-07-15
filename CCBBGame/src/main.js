@@ -82,6 +82,11 @@ document.getElementById("backColor-opponent");
 const rouletteAudio = new Audio("/audio/roulette.mp3");
 const stapRuletteAudio = new Audio("/audio/stapRulette.mp3");
 const fallAudio = new Audio("/audio/fall.mp3");
+const BGMAudio = new Audio("/audio/BGM.wav");
+const winAudio = new Audio("/audio/win.mp3");
+const roseAudio = new Audio("/audio/rose.mp3");
+
+
 
 
 let saveImage=null;
@@ -259,6 +264,7 @@ function connectServer(){
         }
         
         if (data.type === "RESULT_PLAYERS") {
+            BGMAudio.pause();
             stopTurn();
             console.log("RESULT:", data);
             const me = data.players.find(p => p.id === myId);
@@ -277,11 +283,13 @@ function connectServer(){
             const towerHeight = Math.round(data.towerHeight);
 
             if (me.result === "WIN") {
+                winAudio.play();
                 reusltText.textContent = "あなたの勝ち！";
-                towerHeightText.textContent = `高さ ${towerHeight} px`;
+                towerHeightText.innerHTML = `<span style="font-size:48px; font-weight:bold;">${towerHeight}</span> cm`;
             } else {
+                roseAudio.play();
                 reusltText.textContent = "あなたの負け！";
-                towerHeightText.textContent = `高さ ${towerHeight} px`;
+                towerHeightText.innerHTML = `<span style="font-size:48px; font-weight:bold;">${towerHeight}</span> cm`;
             } 
 
             //最後の戦いのコメント
@@ -312,7 +320,7 @@ function connectServer(){
             // }
         }
         if(data.type==="DROP"){
-
+            fallAudio.play();
             dropText.style.display = "block";
 
             dropText.classList.remove("dropAnimation");
@@ -466,6 +474,8 @@ function startCountDown(isMe) {
         }
 
         if (count <= 0) {
+            BGMAudio.loop = true; // ループON
+            BGMAudio.play();
             clearInterval(timer);
             startgameView.style.display = "none";
             cameraView.style.display = "block";

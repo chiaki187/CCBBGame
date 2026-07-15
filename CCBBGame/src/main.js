@@ -75,6 +75,7 @@ document.getElementById("backColor-opponent");
 //音
 const rouletteAudio = new Audio("/audio/roulette.mp3");
 const stapRuletteAudio = new Audio("/audio/stapRulette.mp3");
+const fallAudio = new Audio("/audio/fall.mp3");
 
 
 let saveImage=null;

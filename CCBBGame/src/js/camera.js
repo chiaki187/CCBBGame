@@ -10,6 +10,7 @@ console.log(res.status);
 console.log(res.headers.get("content-type"));
 
 
+
 //タイマー
 let spawnTimer = 0;
 let lastTime = 0;

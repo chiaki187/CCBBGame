@@ -72,6 +72,16 @@ document.getElementById("towCard");
 const resultComment =
 document.getElementById("resultComment");
 
+const backColorMe =
+document.getElementById("backColor-me");
+
+const backColorOpponent =
+document.getElementById("backColor-opponent");
+
+//音
+const rouletteAudio = new Audio("/audio/roulette.mp3");
+const stapRuletteAudio = new Audio("/audio/stapRulette.mp3");
+const fallAudio = new Audio("/audio/fall.mp3");
 
 
 let saveImage=null;
@@ -178,11 +188,14 @@ function connectServer(){
             // カラールーレット開始
             // 3秒待ってからルーレット開始
             setTimeout(() => {
+                rouletteAudio.play();
                 playRoulette(isMe, () => {
                     // showSelectedPalette(boxes_selected, data.colors, isMe);
                     setTimeout(() => {
+                        stapRuletteAudio.play();
                         startCountDown(isMe);
                         if (isMe) {
+                            backColorMe.style.background="rgba(255, 255, 255,0.5)";
                             palette.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "あなたの色が選択されました！";
                             boxes_opponent.forEach(box => {
@@ -190,7 +203,8 @@ function connectServer(){
                             });
                             opponent.style.backgroundColor = "#e2e2e2";
                         } else {
-                            opponent.style.backgroundImage = saveImage;
+                            backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
+                            backColorOpponent.style.opponent.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "相手の色が選択されました！";
                             boxes_me.forEach(box => {
                                 box.style.backgroundColor = "#ccc";
@@ -533,3 +547,4 @@ window.addEventListener("resize", () => {
     fitToScreen("finishgameContent");
 
 });
+

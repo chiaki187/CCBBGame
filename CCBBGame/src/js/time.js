@@ -1,5 +1,6 @@
 import { send } from "./websocket.js";
 
+
 export const turnState = {
     isMyTurn: false,
     started: false

@@ -369,6 +369,7 @@ button{
     animation-fill-mode: forwards;
     animation-timing-function: linear;
     transform-origin: center bottom;
+    
 }
 
 @keyframes bounce {

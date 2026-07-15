@@ -25,13 +25,26 @@
       #firstView,
       #waitingContent,
       #startgameView,
-      #cameraView,
       #finishgameView{
           display:flex;
           justify-content:center;
           align-items:center;
           width:100vw;
           height:100vh;
+      }
+
+      #cameraView{
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          width:100vw;
+          height:100vh;
+
+          flex-shrink: 0;
+          overflow: hidden;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: cover;
       }
 
       #firstViewContent,
@@ -317,12 +330,11 @@
                 <!-- <div class="cameraMiniCard" style="margin-bottom: 50px;"> -->
                 <div class="cameraMiniCard">
                   <!-- <img id="img"> -->
-                  <div id="playerCard"></div>
-                  <div id="turnArea">
+                  <!-- <div id="playerCard"></div> -->
+                  <!-- <div id="turnArea"> -->
                     <div id="turnPlayer"></div>
                     <div id="turnPlayerText">のターンです</div>
-                  </div>
-                  <!-- <div class="bigtext">あなたのターンです</div> -->
+                  <!-- </div> -->
                 </div>
                 
                 <div class="cameraMiniCard">
@@ -330,10 +342,7 @@
                     <h2 class="marker-highlight">ブロック落下まで</h2>
                     <div id="dropCountDown"></div>
                     <h2 class="dummyText">右手の人差し指でブロックを落とす位置を決めよう</h2>
-                    <!-- <img src="src/images/1.png" alt="サンプル画像"> -->
-                    <!-- <h2>自分のターン中に地面の外にブロックが落ちたら負け</h2>
-                    <img src="src/images/2.png" alt="サンプル画像"> -->
-                    </div>
+                  </div>
                 </div>
               </div>
             
@@ -346,7 +355,7 @@
               </div>
               <div class="col draw " style="top: 0;">  
                 <canvas id="canvas"></canvas>
-                <video id="camera" ></video>
+                <video id="camera" style="top: 0; border-radius: 12px; border: 4px solid #fff;"></video>
                 <canvas id="overlay"></canvas>
                 <canvas id="matterCanvas"></canvas>
               </div>
@@ -377,7 +386,7 @@
                   </div>
                 </div>
                 <div id="resultComment">とても素晴らしい戦いでした</div>
-                <button id="closeResult" style="position: relative; top: 2vh;" >Restart</button>
+                <button id="closeResult" style="position: relative; top: 2vh;" >Title</button>
               </div>
             </div>
             <div id="towCard" class="towCard">

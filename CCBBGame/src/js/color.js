@@ -13,6 +13,7 @@ export function generatePalette(img, boxes, colorThief) {
         const color = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
         boxes[index].style.backgroundColor = color;
         boxes[index].textContent = color;
+        boxes[index].style.color = "transparent";
     });
 }
 

@@ -313,84 +313,67 @@ wss.on("connection", (ws) => {
             sendToRoom(room, data);
         }
 
-        //リセットボタンを押したら
-        if(data.type === "RESTART"){
+        //タイトルボタンを押したら
+        if(data.type === "GO_TITLE"){
             const player = room.players.get(ws);
             if (!player) return;
-
-            // 自分はリスタート準備完了
             player.restartReady = true;
-
-            // リスタート準備完了の人数を数える
-            const restartPlayers =
-                Array.from(room.players.values())
-                .filter(p => p.restartReady);
-
-            console.log("reset押した人数："+restartPlayers.length);
-            // 2人とも押したら
-            if(restartPlayers.length === 2){
-
-                // 次回のためにフラグを戻す
-                room.players.forEach(player => {
-                    player.restartReady = false;
-                });
-
-                // クライアントへ通知
-                sendToRoom(room,{
-                    type:"RESTART_GAME"
-                });
-            }
+            leaveRoom(ws);
         }
     });
 
     ws.on("close",()=>{
-        const room = rooms.get(ws.roomId);
-        if(!room){
-            return;
-        }
-        room.noEntry = true;
 
-        // 切断されたプレイヤーを削除
-        room.players.delete(ws);
-        
-        // 残っているプレイヤーだけに送信
-        room.players.forEach((player, otherWs) => {
-            if (otherWs.readyState === 1) {
-                otherWs.send(JSON.stringify({
-                    type: "OPPONENT_DISCONNECTED"
-                }));
-            }
-        });
-        
-        // room.players.forEach((player, otherWs) => {
-        //     if (otherWs !== ws && otherWs.readyState === 1) {
-        //         otherWs.send(JSON.stringify({
-        //             type: "OPPONENT_DISCONNECTED"
-        //         }));
-        //     }
-        // });
-        
-        // room.players.clear();
-
-        // clearInterval(room.turnTimer);
-        // clearInterval(room.engineInterval);
-        // rooms.delete(room.id);
-        
-        // if (room.players.size === 0) {
-        //     clearInterval(room.turnTimer);
-        //     clearInterval(room.engineInterval);
-        //     rooms.delete(room.id);
-        // }
-        
-        // setTimeout(() => {
-        //         clearInterval(room.turnTimer);
-        //         clearInterval(room.engineInterval);
-        //         rooms.delete(room.id);
-        // }, 500);
-
+        leaveRoom(ws);
 
     });
 });
+
+function leaveRoom(ws) {
+    const room = rooms.get(ws.roomId);
+    if (!room) return;
+
+    const player = room.players.get(ws);
+    if (!player) {
+        console.log("leaveRoom: player not found");
+        return;
+    }
+
+    room.noEntry = true;
+    var playerGoTitle = player.restartReady;
+
+    if(!playerGoTitle){
+        // 接続を切った時
+        sendToRoom(
+            room,
+            {
+                type: "OPPONENT_DISCONNECTED"
+            }
+        );
+        return;
+    }else{
+        // 結果画面でタイトルボタンを押したとき
+        sendToRoom(
+            room,
+            {
+                type: "GO_TITLE",
+                playerId: player.id
+            }
+        );
+    }
+
+    room.players.delete(ws);
+
+    const playerSize = room.players.size;
+    console.log("playerSize: ", playerSize);
+    if(playerSize === 0){
+        console.log("clearRoom");
+        clearInterval(room.turnTimer);
+        clearInterval(room.engineInterval);
+        rooms.delete(room.id);
+    }
+}
+
 
 function getTowerHeight(room) {
     // 落下済みブロック

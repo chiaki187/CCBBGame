@@ -74,6 +74,7 @@ document.getElementById("backColor-opponent");
 
 //音
 const rouletteAudio = new Audio("/audio/roulette.mp3");
+const stapRuletteAudio = new Audio("/audio/stapRulette.mp3");
 
 
 let saveImage=null;
@@ -192,11 +193,11 @@ function connectServer(){
             // カラールーレット開始
             // 3秒待ってからルーレット開始
             setTimeout(() => {
-                rouletteAudio.currentTime = 0;
-                    rouletteAudio.play();
+                rouletteAudio.play();
                 playRoulette(isMe, () => {
                     // showSelectedPalette(boxes_selected, data.colors, isMe);
                     setTimeout(() => {
+                        stapRuletteAudio.play();
                         startCountDown(isMe);
                         if (isMe) {
                             backColorMe.style.background="rgba(255, 255, 255,0.5)";

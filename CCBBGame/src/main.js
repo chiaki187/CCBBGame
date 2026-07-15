@@ -188,14 +188,14 @@ function connectServer(){
             // カラールーレット開始
             // 3秒待ってからルーレット開始
             setTimeout(() => {
-                rouletteAudio.play();
+                //rouletteAudio.play();
                 playRoulette(isMe, () => {
-                    // showSelectedPalette(boxes_selected, data.colors, isMe);
+                    showSelectedPalette(boxes_selected, data.colors, isMe);
                     setTimeout(() => {
                         stapRuletteAudio.play();
                         startCountDown(isMe);
                         if (isMe) {
-                            backColorMe.style.background="rgba(255, 255, 255,0.5)";
+                            //backColorMe.style.background="rgba(255, 255, 255,0.5)";
                             palette.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "あなたの色が選択されました！";
                             boxes_opponent.forEach(box => {
@@ -203,8 +203,8 @@ function connectServer(){
                             });
                             opponent.style.backgroundColor = "#e2e2e2";
                         } else {
-                            backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
-                            backColorOpponent.style.opponent.style.backgroundImage = saveImage;
+                            //backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
+                            opponent.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "相手の色が選択されました！";
                             boxes_me.forEach(box => {
                                 box.style.backgroundColor = "#ccc";
@@ -287,9 +287,9 @@ function connectServer(){
             //最後の戦いのコメント
             if(towerHeight<100){
                 resultComment.textContent="挑戦の始まりを感じる一戦でした";
-            }else if(towerHeight<200){
-                resultComment.textContent="バランス感覚が光る、印象的な対戦でした"
             }else if(towerHeight<300){
+                resultComment.textContent="バランス感覚が光る、印象的な対戦でした"
+            }else if(towerHeight<400){
                 resultComment.textContent="素晴らしい集中力が生んだ、見事な積み上げでした"
             }else{
                 resultComment.textContent="まさに職人技が光る、伝説的な積み上げでした"

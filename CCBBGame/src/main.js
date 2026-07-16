@@ -119,6 +119,9 @@ let myColorDecided = false;
 let myColors = [];
 let myId = null;
 
+let decideMyImage = null;
+let decideOpponentImage = null;
+
 // ゲーム終了結果画面
 const resultText = 
 document.getElementById("resultText");
@@ -163,6 +166,15 @@ function connectServer(){
             const decidedPlayers = players.filter(p => p.decided);
             console.log(decidedPlayers.length)
             if (decidedPlayers.length === 2) {
+                const player1 = decidedPlayers[0];
+                const player2 = decidedPlayers[1];
+                if(player1.id === myId){
+                    decideMyImage = `url(${player1.image})`;
+                    decideOpponentImage = `url(${player2.image})`;
+                }else{
+                    decideMyImage = `url(${player2.image})`;
+                    decideOpponentImage = `url(${player1.image})`;
+                }
                 
                 // 自分を特定
                 const me = players.find(p => p.id === myId);
@@ -190,6 +202,10 @@ function connectServer(){
             colorSystemExplainText.style.display = "none";
             whoSelectedText.textContent = "お互いのカラーパレット選択が終了しました";
             countDown.textContent = "ルーレットを開始します！";
+
+            palette.style.backgroundImage = decideMyImage;
+            opponent.style.backgroundImage = decideOpponentImage;
+
             // カラールーレット開始
             // 3秒待ってからルーレット開始
             setTimeout(() => {
@@ -206,7 +222,9 @@ function connectServer(){
                             boxes_opponent.forEach(box => {
                                 box.style.backgroundColor = "#ccc";
                             });
-                            opponent.style.backgroundColor = "#e2e2e2";
+                            opponent.style.backgroundImage = "";
+                            opponent.style.backgroundColor = "rgba(255, 255, 255, 0)";
+                            opponent.classList.add("glass-card");
                         } else {
                             backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
                             opponent.style.backgroundImage = saveImage;
@@ -214,8 +232,12 @@ function connectServer(){
                             boxes_me.forEach(box => {
                                 box.style.backgroundColor = "#ccc";
                             });
-                            palette.style.backgroundColor = "#e2e2e2";
+                            palette.style.backgroundImage = "";
+                            // palette.style.backgroundColor = "#e2e2e2";
+                            palette.style.backgroundColor = "rgba(255, 255, 255, 0)";
+                            palette.classList.add("glass-card");
                         }
+                        startgameView.style.backgroundImage = saveImage;
                     }, 1000); //  2秒
                     saveImage = `url(${data.image})`;
                 });
@@ -334,17 +356,6 @@ function connectServer(){
             }
         }
 
-    // if(data.type === "RESTART_GAME"){
-    //     console.log("リスタートがmainに帰ってきました");
-    //     location.reload();
-
-    //     finishgameView.style.display = "none";
-    //     firstView.style.display = "block";
-
-    //     // 必要な変数を初期化
-    //     myColorDecided = false;
-    //     selectedColor = null;
-    // }
 
     });
 }
@@ -358,7 +369,7 @@ function updateColorsFromBoxes() {
     myColors = Array.from(boxes_me).map(box => box.textContent);
 }
 
-//画像データ保存用変数
+// //画像データ保存用変数
 let myImage = null;
 
 

@@ -20,7 +20,7 @@ const BASE_WIDTH = 1280;
 const BASE_HEIGHT = 720;
 
 const canvasWidth = BASE_WIDTH / 3;
-const canvasHeight = 10;
+const canvasHeight = 15;
 const canvasX = BASE_WIDTH / 2;
 const canvasY = BASE_HEIGHT - canvasHeight;
 
@@ -63,17 +63,27 @@ export function drawBlocks(){
     const scaleY = matterCanvas.height / BASE_HEIGHT;
 
     const groundWidth = canvasWidth * scaleX;
-    const groundHeight = canvasHeight * scaleY;
+    const groundHeight = 2 * canvasHeight * scaleY;
     const groundX = canvasX * scaleX;
     const groundY = canvasY * scaleY;
 
-    ctx.fillStyle = "#666";
-
+    ctx.fillStyle = "#000000";
+    
     ctx.fillRect(
         groundX - groundWidth / 2,
         groundY - groundHeight / 2,
         groundWidth,
         groundHeight
+    );
+
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 2;
+
+    ctx.strokeRect(
+        groundX - groundWidth / 2 + ctx.lineWidth / 2,
+        groundY - groundHeight / 2 + ctx.lineWidth / 2,
+        groundWidth - ctx.lineWidth,
+        groundHeight - ctx.lineWidth
     );
 
     blocks.forEach(block=>{

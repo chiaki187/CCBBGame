@@ -63,8 +63,8 @@ document.getElementById("opponent");
 const cameraContent = 
 document.getElementById("cameraContent");
 
-// const playerCard =
-// document.getElementById("playerCard");
+const playerCard =
+document.getElementById("playerCard");
 
 const towCard =
 document.getElementById("towCard");
@@ -480,7 +480,7 @@ function startCountDown(isMe) {
             startgameView.style.display = "none";
             cameraView.style.display = "block";
             cameraView.style.backgroundImage = saveImage;
-            // playerCard.style.backgroundImage = saveImage;
+            playerCard.style.backgroundImage = saveImage;
 
             requestAnimationFrame(() => {
                 originalSizes.delete("cameraContent");

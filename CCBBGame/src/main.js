@@ -60,9 +60,6 @@ document.getElementById("palette");
 const opponent =
 document.getElementById("opponent");
 
-const roulette_grass =
-document.getElementById("roulette-grass");
-
 const cameraContent = 
 document.getElementById("cameraContent");
 

@@ -147,7 +147,7 @@ button{
     padding: 15px 150px;
 
 
-    background-color: black;
+    background-color: #454551;
     font-size:20px;
     color: white;
    
@@ -296,7 +296,6 @@ button{
 #turnPlayer{
     width: 100%;
     text-align: center;
-    margin-top: 10px;
     font-weight: bold;
     font-size: clamp(12px, 8vw, 50px);
 }
@@ -342,7 +341,6 @@ button{
 
 .cameraMiniTop > .cameraMiniCard:first-child{
   align-items: center;
-  background: rgba(255, 255, 255, 0.6);
   border-radius: 12px;
   padding: 10px;
   gap: 20px;
@@ -359,11 +357,13 @@ button{
   font-weight: bold;
 }
 
-#roulette-grass {
-  background: rgba(255, 255, 255, 0.1);
+.grass-back {
+  width: 100%;
+  height: 100%;
+  /* background: rgba(255, 255, 255, 0.1); */
   border: 2px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .marker-highlight {

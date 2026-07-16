@@ -296,7 +296,7 @@ button{
 #turnPlayer{
     width: 100%;
     text-align: center;
-
+    margin-top: 10px;
     font-weight: bold;
     font-size: clamp(12px, 8vw, 50px);
 }
@@ -306,7 +306,7 @@ button{
     text-align: center;
 
     font-weight: bold;
-    font-size: clamp(8px, 4vw, 16px);
+    font-size: clamp(8px, 3vw, 20px);
 }
 
 .cameraCardRight{
@@ -357,6 +357,13 @@ button{
   -webkit-backdrop-filter: blur(10px) saturate(100%);
 
   font-weight: bold;
+}
+
+#roulette-grass {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .marker-highlight {

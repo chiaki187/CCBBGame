@@ -60,6 +60,9 @@ document.getElementById("palette");
 const opponent =
 document.getElementById("opponent");
 
+const roulette_grass =
+document.getElementById("roulette-grass");
+
 const cameraContent = 
 document.getElementById("cameraContent");
 
@@ -238,6 +241,14 @@ function connectServer(){
                             palette.classList.add("glass-card");
                         }
                         startgameView.style.backgroundImage = saveImage;
+
+                        // palette.style.backgroundImage = "";
+                        // palette.style.backgroundColor = "rgba(255, 255, 255, 0)";
+                        // palette.classList.add("glass-card");
+
+                        // opponent.style.backgroundImage = "";
+                        // opponent.style.backgroundColor = "rgba(255, 255, 255, 0)";
+                        // opponent.classList.add("glass-card");
                     }, 1000); //  2秒
                     saveImage = `url(${data.image})`;
                 });

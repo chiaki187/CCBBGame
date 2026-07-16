@@ -161,7 +161,8 @@ function sendColorState(room) {
             id: p.id,
             colors: p.colors,
             selectedColor: p.selectedColor,
-            decided: p.decided
+            decided: p.decided,
+            image: p.image
         });
     });
     

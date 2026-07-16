@@ -72,6 +72,9 @@ document.getElementById("towCard");
 const resultComment =
 document.getElementById("resultComment");
 
+const shine = 
+document.querySelector(".shine");
+
 const backColorMe =
 document.getElementById("backColor-me");
 
@@ -202,6 +205,8 @@ function connectServer(){
             colorSystemExplainText.style.display = "none";
             whoSelectedText.textContent = "お互いのカラーパレット選択が終了しました";
             countDown.textContent = "ルーレットを開始します！";
+            backColorMe.style.background="rgba(255, 255, 255, 1.0)";
+            backColorOpponent.style.background="rgba(255, 255, 255, 1.0)";
 
             palette.style.backgroundImage = decideMyImage;
             opponent.style.backgroundImage = decideOpponentImage;
@@ -216,7 +221,7 @@ function connectServer(){
                         stapRuletteAudio.play();
                         startCountDown(isMe);
                         if (isMe) {
-                            backColorMe.style.background="rgba(255, 255, 255,0.5)";
+                            backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
                             palette.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "あなたの色が選択されました！";
                             boxes_opponent.forEach(box => {
@@ -226,7 +231,7 @@ function connectServer(){
                             opponent.style.backgroundColor = "rgba(255, 255, 255, 0)";
                             opponent.classList.add("glass-card");
                         } else {
-                            backColorOpponent.style.background="rgba(255, 255, 255,0.5)";
+                            backColorMe.style.background="rgba(255, 255, 255,0.5)";
                             opponent.style.backgroundImage = saveImage;
                             whoSelectedText.textContent = "相手の色が選択されました！";
                             boxes_me.forEach(box => {
@@ -238,7 +243,7 @@ function connectServer(){
                             palette.classList.add("glass-card");
                         }
                         startgameView.style.backgroundImage = saveImage;
-
+                        shine.style.backgroundColor = "rgba(255, 255, 255, 1.0)";
                         // palette.style.backgroundImage = "";
                         // palette.style.backgroundColor = "rgba(255, 255, 255, 0)";
                         // palette.classList.add("glass-card");

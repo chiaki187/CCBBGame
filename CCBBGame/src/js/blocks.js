@@ -63,7 +63,7 @@ export function drawBlocks(){
     const scaleY = matterCanvas.height / BASE_HEIGHT;
 
     const groundWidth = canvasWidth * scaleX;
-    const groundHeight = 2 * canvasHeight * scaleY;
+    const groundHeight = canvasHeight * scaleY;
     const groundX = canvasX * scaleX;
     const groundY = canvasY * scaleY;
 

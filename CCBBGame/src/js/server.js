@@ -56,7 +56,7 @@ const BASE_WIDTH = 1280;
 const BASE_HEIGHT = 720;
 
 const groundWidth = BASE_WIDTH / 3;
-const groundHeight = 10;
+const groundHeight = 15;
 
 const groundX = BASE_WIDTH / 2;
 const groundY = BASE_HEIGHT - groundHeight;

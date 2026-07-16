@@ -212,94 +212,96 @@
 
     <!--ゲーム開始画面-->
     <div id="startgameView" style="display:none;">
-      <div id="startgameContent">
-        <div class="center">
-          <div class="minicontainer">
-            <div class="minibox red"></div>
-            <div class="minibox yellow"></div>
-            <div class="minibox green"></div>
-            <div class="minibox purle"></div>
-        </div>
-       
-        <!--img id="selectedImage"-->
-        <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
-        <div id="countDown" class="bigtext" >積み木の色を
-          <span style="color:#FA8B8A;">カ</span>
-          <span style="color:#FACA57;">ス</span>
-          <span style="color:#68D4CB;">タ</span>
-          <span style="color:#AB99E0;">ム</span>
-          しよう！</div>
-        <div class="container">
-
-          <!--色選択の説明-->
-          <div id="colorSystemExplainText" class="transparentcard">
-            <h2 style=" margin-top: 40px; text-align: center;">選択方法</h2>       
-            <h3 style=" margin-top: 40px;">❶好きな写真を選択</h3>
-            <!-- ファイル選択 -->
-            <input type="file" id="fileInput" accept="image/*">
-            <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2>  
-            <img id="img" src="src/images/4.png" alt="サンプル画像">     
-            <h3>❷写真から８色を抽出</h3>
-            <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2> 
-            <h3>❸あなた または 相手 のパレットから<br>
-                 　ランダムに選択！</h3>
-            <!-- ランダムカラーボタン -->
-            <button id="randomBtn" style="font-size:small; display:none">Random</button>
+      <div id="roulette-grass">
+        <div id="startgameContent">
+          <div class="center">
+            <div class="minicontainer">
+              <div class="minibox red"></div>
+              <div class="minibox yellow"></div>
+              <div class="minibox green"></div>
+              <div class="minibox purle"></div>
           </div>
-
-            <div id="palette" class="card center player-panel">
-              <h2 id="backColor-me" class="shine">あなたのパレット</h2>
-              
-              <div>
-                <div id="myPalette" class="center">
-                  <div class="row">
-                    <div class="color-box-me"></div>
-                    <div class="color-box-me"></div>
-                    <div class="color-box-me"></div>
-                    <div class="color-box-me"></div>
-                  </div>
-                  <div class="row">
-                    <div class="color-box-me"></div>
-                    <div class="color-box-me"></div>
-                    <div class="color-box-me"></div>
-                    <div class="color-box-me"></div>
-                  </div>
-                </div>
-              </div>
-              
-                  
-            
-              <p class="nextDelete">決定すると相手にあなたのパレットが送られます</p>
-              <br>
-              <button id="decideBtn" class="nextDelete">決定</button>
-            </div>
-
-            <div id="opponent" class="card center player-panel">
-              <h2 id="backColor-opponent" class="shine">相手のパレット</h2>
-
-              <div >
-                <div class="center">
-                  <div class="row">
-                    <div class="color-box-opponent"></div>
-                    <div class="color-box-opponent"></div>
-                    <div class="color-box-opponent"></div>
-                    <div class="color-box-opponent"></div>
-                  </div>
-                  <div class="row">
-                    <div class="color-box-opponent"></div>
-                    <div class="color-box-opponent"></div>
-                    <div class="color-box-opponent"></div>
-                    <div class="color-box-opponent"></div>
-                  </div>
-                  <h2 class="nextDelete" style="color:#ccc;margin-top: 120px;">相手が色を選んでいます</h2>
-                </div>
-            </div>
-            </div>
-          
-
-          </div>  
-          <script type="module" src="/src/main.js"></script>
         
+          <!--img id="selectedImage"-->
+          <div id="whoSelectedText" class="bigtext">写真から色を検出して</div>
+          <div id="countDown" class="bigtext" >積み木の色を
+            <span style="color:#FA8B8A;">カ</span>
+            <span style="color:#FACA57;">ス</span>
+            <span style="color:#68D4CB;">タ</span>
+            <span style="color:#AB99E0;">ム</span>
+            しよう！</div>
+          <div class="container">
+
+            <!--色選択の説明-->
+            <div id="colorSystemExplainText" class="transparentcard">
+              <h2 style=" margin-top: 40px; text-align: center;">選択方法</h2>       
+              <h3 style=" margin-top: 40px;">❶好きな写真を選択</h3>
+              <!-- ファイル選択 -->
+              <input type="file" id="fileInput" accept="image/*">
+              <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2>  
+              <img id="img" src="src/images/4.png" alt="サンプル画像">     
+              <h3>❷写真から８色を抽出</h3>
+              <h2 style=" margin-top: 0px;margin-bottom: 0px; text-align: center;"></h2> 
+              <h3>❸あなた または 相手 のパレットから<br>
+                  　ランダムに選択！</h3>
+              <!-- ランダムカラーボタン -->
+              <button id="randomBtn" style="font-size:small; display:none">Random</button>
+            </div>
+
+              <div id="palette" class="card center player-panel">
+                <h2 id="backColor-me" class="shine">あなたのパレット</h2>
+                
+                <div>
+                  <div id="myPalette" class="center">
+                    <div class="row">
+                      <div class="color-box-me"></div>
+                      <div class="color-box-me"></div>
+                      <div class="color-box-me"></div>
+                      <div class="color-box-me"></div>
+                    </div>
+                    <div class="row">
+                      <div class="color-box-me"></div>
+                      <div class="color-box-me"></div>
+                      <div class="color-box-me"></div>
+                      <div class="color-box-me"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                    
+              
+                <p class="nextDelete">決定すると相手にあなたのパレットが送られます</p>
+                <br>
+                <button id="decideBtn" class="nextDelete">決定</button>
+              </div>
+
+              <div id="opponent" class="card center player-panel">
+                <h2 id="backColor-opponent" class="shine">相手のパレット</h2>
+
+                <div >
+                  <div class="center">
+                    <div class="row">
+                      <div class="color-box-opponent"></div>
+                      <div class="color-box-opponent"></div>
+                      <div class="color-box-opponent"></div>
+                      <div class="color-box-opponent"></div>
+                    </div>
+                    <div class="row">
+                      <div class="color-box-opponent"></div>
+                      <div class="color-box-opponent"></div>
+                      <div class="color-box-opponent"></div>
+                      <div class="color-box-opponent"></div>
+                    </div>
+                    <h2 class="nextDelete" style="color:#ccc;margin-top: 120px;">相手が色を選んでいます</h2>
+                  </div>
+              </div>
+              </div>
+            
+
+            </div>  
+            <script type="module" src="/src/main.js"></script>
+          
+          </div>
         </div>
       </div>
     </div>
